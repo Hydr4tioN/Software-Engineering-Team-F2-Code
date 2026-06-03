@@ -33,7 +33,7 @@ function App() {
       setEntries(data)
       setError('')
     } catch (error) {
-      setError('Einträge konnten nicht vom Backend geladen werden.')
+      setError('Belastungseinträge konnten nicht vom Backend geladen werden.')
     }
   }
 
@@ -41,7 +41,7 @@ function App() {
     event.preventDefault()
 
     if (newEntryText.trim() === '') {
-      setError('Bitte gib einen Text ein.')
+      setError('Bitte gib eine Belastung ein.')
       return
     }
 
@@ -66,16 +66,16 @@ function App() {
       setNewEntryText('')
       setError('')
     } catch (error) {
-      setError('Eintrag konnte nicht gespeichert werden.')
+      setError('Belastungseintrag konnte nicht gespeichert werden.')
     }
   }
 
   return (
     <main className="app">
       <section className="hero">
-        <h1>PWA-SE</h1>
+        <h1>Belastungs-Tracker</h1>
         <p>
-          Walking Skeleton mit React, Vite, Node.js und Express.
+          Walking Skeleton zur Erfassung und Anzeige von Belastungseinträgen.
         </p>
       </section>
 
@@ -84,38 +84,38 @@ function App() {
 
         <div className="card-grid">
           <article className="card">
-            <h3>Frontend</h3>
+            <h3>App-Oberfläche</h3>
             <p>React + JavaScript + Vite</p>
           </article>
 
           <article className="card">
-            <h3>Backend</h3>
+            <h3>API-Status</h3>
             <p>{backendStatus}</p>
           </article>
 
           <article className="card">
-            <h3>Persistenz</h3>
-            <p>Temporäres Array im Backend</p>
+            <h3>Temporäre Speicherung</h3>
+            <p>Belastungseinträge werden aktuell im Backend zwischengespeichert.</p>
           </article>
         </div>
       </section>
 
       <section className="interaction">
-        <h2>Eintrag speichern</h2>
+        <h2>Belastung erfassen</h2>
 
         <form onSubmit={handleSubmit} className="entry-form">
           <input
             type="text"
             value={newEntryText}
             onChange={(event) => setNewEntryText(event.target.value)}
-            placeholder="Neuen Eintrag eingeben"
+            placeholder="z. B. Prüfung, Projektstress, Schlafmangel"
           />
           <button type="submit">Speichern</button>
         </form>
 
         {error && <p className="error">{error}</p>}
 
-        <h3>Einträge aus dem Backend</h3>
+        <h3>Erfasste Belastungen</h3>
 
         <ul className="entry-list">
           {entries.map((entry) => (
