@@ -1,37 +1,68 @@
-import { useState } from "react";
+    import { useState } from "react"
+    import './Register.css';
 
-function Register() {
-    const [email, setEmail] = useState("");
-    const [passwort, setPasswort] = useState("");
+    function Register() {
+        const [email, setEmail] = useState("");
+        const [passwort, setPasswort] = useState("");
+        const [error, setError] = useState("");
 
-  return (
-    <div>
-      <h1>Registrierung</h1>
+        function handleSubmit(event) {
+            event.preventDefault();
 
-      <h3>
-        Erstelle einen Account für dein Stress Management
-      </h3>
-      
-      <input
-        type="email"
-        placeholder="E-Mail"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        />
-    <br></br>
-    
-    <input
-    type="password"
-    placeholder="Passwort"
-    value={passwort}
-    onChange={(e) => setPasswort(e.target.value)}
-    />
-    <br></br>
+            if (email.trim() === "") {
+                setError("Bitte E-Mail eingeben");
+                return;
+            }
 
+            if (passwort.trim() === "") {
+                setError("Bitte Passwort eingeben");
+                return;
+            }
 
-    </div>
-    
-  );
-}
+            if (passwort.length < 6) {
+                setError("Passwort muss mindestens 6 Zeichen haben");
+                return;
+            }
 
-export default Register;
+            setError("");
+            console.log("Formular gültig:", { email, passwort });
+        }
+
+        return (
+            <div className="register-container">
+                <h1>Registrierung</h1>
+
+                <h3>
+                    Erstelle einen Account für dein Stress Management
+                </h3>
+
+                <form onSubmit={handleSubmit}>
+
+                    <input
+                        type="email"
+                        placeholder="E-Mail"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <br />
+
+                    <input
+                        type="password"
+                        placeholder="Passwort"
+                        value={passwort}
+                        onChange={(e) => setPasswort(e.target.value)}
+                    />
+                    <br />
+
+                    <button type="submit">
+                        Registrieren
+                    </button>
+                    {error && <p style={{ color: "red" }}>{error}</p>}
+
+                </form>
+
+            </div>
+        );
+    }
+
+    export default Register;
