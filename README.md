@@ -1,6 +1,6 @@
 # SE-PWA
 
-Walking Skeleton für eine Progressive Web App mit React, Vite, Node.js und Express.
+Walking Skeleton für eine Progressive Web App mit React, Vite und Nest.js.
 
 Ziel dieses Standes ist ein minimaler technischer Durchstich vom Frontend über eine REST-API bis zu einer temporären Persistenz im Backend.
 
