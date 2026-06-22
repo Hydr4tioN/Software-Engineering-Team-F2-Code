@@ -9,12 +9,16 @@ function Home() {
         <h3>Manage deinen Stress einfacher!</h3>
 
         <div className="nav-buttons">
-          <Link to="/login" className="btn primary">
-            Einloggen
+          <Link to="/login">
+            <button>
+              Einloggen
+            </button>
           </Link>
 
-          <Link to="/register" className="btn secondary">
-            Registrieren
+          <Link to="/register">
+            <button className="secondary">
+              Registrieren
+            </button>
           </Link>
         </div>
 

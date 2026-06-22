@@ -3,7 +3,7 @@
 body {
     margin: 0;
     font-family: system-ui, -apple-system, Arial, sans-serif;
-    background: #f5f7fb;
+    background: linear-gradient(180deg, #f5f7fb, #eef2ff);
     color: #111827;
 }
 
@@ -25,42 +25,33 @@ body {
 }
 
 
-/* Center Layout (Startseite) */
+/* Center Content */
 
 .center {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    align-items: center;
     text-align: center;
+    justify-content: center;
     gap: 16px;
-    height: 100%;
+    flex: 1;
 }
 
 
 /* Headings */
 
 h1 {
-    font-size: 26px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
     margin: 0;
-    color: #111827;
+    color: #0f172a;
 }
 
 h3 {
     font-size: 14px;
     font-weight: 400;
     margin: 0;
-    color: #6b7280;
-}
-
-
-/* Form Layout */
-
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 16px;
+    color: #64748b;
 }
 
 
@@ -70,115 +61,68 @@ input {
     width: 100%;
     padding: 14px;
     border-radius: 12px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
     font-size: 15px;
-    color: #111827;
     box-sizing: border-box;
+    color: #0f172a;
 }
 
 input:focus {
     outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
 }
 
 
-/* Buttons */
+/* BUTTON BASE (WICHTIG FIX) */
 
 button {
     width: 100%;
     padding: 14px;
     border-radius: 12px;
     border: none;
-    background: #4f46e5;
-    color: #ffffff;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: white;
     font-weight: 600;
     cursor: pointer;
     transition: 0.2s ease;
+    display: block;
 }
 
 button:hover {
-    background: #4338ca;
+    background: linear-gradient(135deg, #4f46e5, #4338ca);
     transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
 }
 
 
 /* Secondary Button */
 
 button.secondary {
-    background: #eef2ff;
+    background: #f8fafc;
     color: #4f46e5;
+    border: 2px solid #e0e7ff;
+}
+
+button.secondary:hover {
+    background: #eef2ff;
 }
 
 
-/* Navigation Buttons */
+/* Nav Buttons */
 
 .nav-buttons {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-top: 20px;
+    width: 100%;
 }
 
 
-/* Error Text */
+/* Error */
 
 .error {
     color: #ef4444;
     font-size: 13px;
-}
-
-
-/* Entry List */
-
-.entry-list li {
-    background: #f3f4f6;
-    padding: 10px 12px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-}
-
-
-/* Button Base */
-
-.btn {
-    display: inline-block;
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    font-weight: 600;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    transition: 0.2s ease;
-    box-sizing: border-box;
-}
-
-
-/* Primary Button */
-
-.btn.primary {
-    background: #4f46e5;
-    color: white;
-    border: 2px solid #4f46e5;
-}
-
-.btn.primary:hover {
-    background: #4338ca;
-    border-color: #4338ca;
-    transform: translateY(-1px);
-}
-
-
-/* Secondary Button (mit Umrandung) */
-
-.btn.secondary {
-    background: transparent;
-    color: #4f46e5;
-    border: 2px solid #4f46e5;
-}
-
-.btn.secondary:hover {
-    background: #eef2ff;
 }
