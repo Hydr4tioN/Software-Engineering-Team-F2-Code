@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [passwort, setPasswort] = useState("");
@@ -50,9 +51,11 @@ function handleSubmit(e) {
                 <button type="submit">
                     Anmelden
                 </button>
+                {error && <p className="error">{error}</p>}
             </form>
         </div>
     );
 }
 
 export default Login;
+
