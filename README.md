@@ -1,6 +1,6 @@
 # SE-PWA
 
-Walking Skeleton für eine Progressive Web App mit React, Vite, Node.js und Express.
+Walking Skeleton für eine Progressive Web App mit React, Vite und Nest.js.
 
 Ziel dieses Standes ist ein minimaler technischer Durchstich vom Frontend über eine REST-API bis zu einer temporären Persistenz im Backend.
 
@@ -9,7 +9,7 @@ Ziel dieses Standes ist ein minimaler technischer Durchstich vom Frontend über 
 | Bereich | Technologie |
 |---|---|
 | Frontend | React + JavaScript + Vite |
-| Backend | Node.js + Express |
+| Backend | Nest.js |
 | API-Kommunikation | REST API mit JSON |
 | Persistenz | Temporäres Array im Backend |
 | Versionsverwaltung | Git |
@@ -20,7 +20,7 @@ Ziel dieses Standes ist ein minimaler technischer Durchstich vom Frontend über 
 ```text
 SE-PWA/
 ├── frontend/   # React + Vite Frontend
-├── backend/    # Node.js + Express Backend
+├── backend/    # Nest.js Backend
 ├── docs/       # Dokumentation
 └── README.md
 ```
@@ -170,7 +170,7 @@ Später soll die temporäre Persistenz durch Supabase PostgreSQL ersetzt werden.
 Erledigt:
 
 - React + Vite Frontend eingerichtet,
-- Node.js + Express Backend eingerichtet,
+- Nest.js Backend eingerichtet,
 - REST-Endpunkte erstellt,
 - Frontend mit Backend verbunden,
 - temporäre Persistenz im Backend umgesetzt,

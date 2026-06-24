@@ -1,6 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState("");
     const [passwort, setPasswort] = useState("");
     const [error, setError] = useState("");
@@ -24,7 +27,11 @@ function Register() {
         }
 
         setError("");
+
         console.log("Formular gültig:", { email, passwort });
+
+
+        navigate("/Checkin");
     }
 
     return (
