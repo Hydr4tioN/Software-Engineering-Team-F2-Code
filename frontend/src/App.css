@@ -192,3 +192,14 @@ a {
     padding: 8px 10px;
     border-radius: 10px;
 }
+
+.diagram-container {
+    margin-top: 40px;
+    padding: 24px;
+    background: #f7faf7;
+    border-radius: 20px;
+}
+
+.recharts-wrapper {
+    margin-top: 20px;
+}
