@@ -1,126 +1,156 @@
 import { useEffect, useState } from 'react'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import Login from './Login.jsx'
+import Register from './Register.jsx'
 import './App.css'
-import { Routes, Route, Link } from "react-router-dom";
-import Register from "./Register.jsx"
 
-const API_BASE_URL = 'http://localhost:3000/api'
+const API_BASE_URL = 'http://localhost:3000'
 
-function App() {
-  const [backendStatus, setBackendStatus] = useState('wird geprüft...')
-  const [entries, setEntries] = useState([])
-  const [newEntryText, setNewEntryText] = useState('')
+// ── Geschützte Route: leitet zur Login-Seite weiter wenn nicht angemeldet ──
+function ProtectedRoute({ token, children }) {
+  if (!token) return <Navigate to="/login" replace />
+  return children
+}
+
+// ── Dashboard: Check-In erfassen + Daten anzeigen ──
+function Dashboard({ token, onLogout }) {
+  const [stressLevel, setStressLevel] = useState(5)
+  const [energyLevel, setEnergyLevel] = useState(5)
+  const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [chartData, setChartData] = useState(null)
 
   useEffect(() => {
-    loadBackendStatus()
-    loadEntries()
+    loadChartData()
   }, [])
 
-  async function loadBackendStatus() {
+  async function loadChartData() {
     try {
-      const response = await fetch(`${API_BASE_URL}/health`)
-      const data = await response.json()
-
-      setBackendStatus(`${data.status} - ${data.service}`)
-    } catch (error) {
-      setBackendStatus('Backend nicht erreichbar')
+      const res = await fetch(`${API_BASE_URL}/check-ins/chart`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const json = await res.json()
+      setChartData(json)
+    } catch {
+      setError('Daten konnten nicht geladen werden.')
     }
   }
 
-  async function loadEntries() {
+  async function handleCheckIn(e) {
+    e.preventDefault()
+    setMessage('')
+    setError('')
     try {
-      const response = await fetch(`${API_BASE_URL}/entries`)
-      const data = await response.json()
-
-      setEntries(data)
-      setError('')
-    } catch (error) {
-      setError('Belastungseinträge konnten nicht vom Backend geladen werden.')
-    }
-  }
-
-  async function handleSubmit(event) {
-    event.preventDefault()
-
-    if (newEntryText.trim() === '') {
-      setError('Bitte gib eine Belastung ein.')
-      return
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/entries`, {
+      const res = await fetch(`${API_BASE_URL}/check-ins`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ text: newEntryText }),
+        body: JSON.stringify({
+          stress_level: Number(stressLevel),
+          energy_level: Number(energyLevel),
+        }),
       })
-
-      if (!response.ok) {
-        throw new Error('Speichern fehlgeschlagen')
-      }
-
-      const savedEntry = await response.json()
-
-      setEntries([...entries, savedEntry])
-      setNewEntryText('')
-      setError('')
-    } catch (error) {
-      setError('Belastungseintrag konnte nicht gespeichert werden.')
+      if (!res.ok) throw new Error()
+      setMessage('Check-In erfolgreich gespeichert!')
+      loadChartData()
+    } catch {
+      setError('Check-In konnte nicht gespeichert werden.')
     }
   }
 
   return (
     <main className="app">
+      <section className="hero">
+        <h1>EnergyBalance</h1>
+        <button onClick={onLogout} style={{ float: 'right' }}>Abmelden</button>
+      </section>
 
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <div>
+      <section className="interaction">
+        <h2>Check-In</h2>
+        <form onSubmit={handleCheckIn} className="entry-form">
+          <label>
+            Stresslevel: <strong>{stressLevel}</strong>
+            <input
+              type="range" min="1" max="10"
+              value={stressLevel}
+              onChange={(e) => setStressLevel(e.target.value)}
+            />
+          </label>
+          <label>
+            Energielevel: <strong>{energyLevel}</strong>
+            <input
+              type="range" min="1" max="10"
+              value={energyLevel}
+              onChange={(e) => setEnergyLevel(e.target.value)}
+            />
+          </label>
+          <button type="submit">Speichern</button>
+        </form>
+        {message && <p style={{ color: 'green' }}>{message}</p>}
+        {error && <p className="error">{error}</p>}
+      </section>
 
-              <h1>Belastungs-Tracker</h1>
-
-              <Link to="/register">
-                Zur Registrierung
-              </Link>
-
-              <hr />
-
-              <p><b>API Status:</b> {backendStatus}</p>
-
-              <form onSubmit={handleSubmit}>
-                <input
-                  type="text"
-                  value={newEntryText}
-                  onChange={(e) => setNewEntryText(e.target.value)}
-                  placeholder="Belastung eingeben"
-                />
-                <button type="submit">Speichern</button>
-              </form>
-
-              {error && <p>{error}</p>}
-
-              <ul>
-                {entries.map((entry) => (
-                  <li key={entry.id}>
-                    #{entry.id} {entry.text}
-                  </li>
-                ))}
-              </ul>
-
-            </div>
-          }
-        />
-        <Route
-          path="/register"
-          element={<Register />}
-        />
-
-      </Routes>
-
+      <section className="interaction">
+        <h2>Verlauf</h2>
+        {!chartData || chartData.labels?.length === 0 ? (
+          <p>Keine Daten vorhanden. Füge deinen ersten Check-In hinzu!</p>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th>Zeitpunkt</th>
+                <th>Stress</th>
+                <th>Energie</th>
+              </tr>
+            </thead>
+            <tbody>
+              {chartData.labels.map((label, i) => (
+                <tr key={i}>
+                  <td>{new Date(label).toLocaleString('de-DE')}</td>
+                  <td>{chartData.stressData[i]?.y}</td>
+                  <td>{chartData.energyData[i]?.y}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
     </main>
   )
 }
 
-export default App
+// ── App Root ──
+export default function App() {
+  const [token, setToken] = useState(() => localStorage.getItem('token'))
+  const navigate = useNavigate()
+
+  function handleLoginSuccess(accessToken) {
+    localStorage.setItem('token', accessToken)
+    setToken(accessToken)
+    navigate('/dashboard')
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('token')
+    setToken(null)
+    navigate('/login')
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to={token ? '/dashboard' : '/login'} replace />} />
+      <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} apiBase={API_BASE_URL} />} />
+      <Route path="/register" element={<Register apiBase={API_BASE_URL} />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute token={token}>
+            <Dashboard token={token} onLogout={handleLogout} />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  )
+}
