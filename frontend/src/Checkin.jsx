@@ -4,7 +4,12 @@ import Visualisierung from "./visualisierung";
 const API_BASE_URL = "http://localhost:3000/api";
 
 function Checkin() {
+<<<<<<< HEAD
   const [stress, setStress] = useState(1);
+=======
+  const [stress, setStress] = useState(0);
+  const [energie, setEnergie] = useState(1);
+>>>>>>> e66d430 (Implement US-002 Energielevel)
   const [entries, setEntries] = useState([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [error, setError] = useState("");
@@ -59,7 +64,14 @@ function Checkin() {
   }, []);
 
   function handleSave() {
+      if (energie < 1 || energie > 10) {
+    setError("Das Energielevel muss zwischen 1 und 10 liegen.");
+    return;
+  }
+   setError("");
+   
     console.log("Stress gespeichert:", stress);
+    console.log("Energie gespeichert:", energie);
   }
 
   return (
@@ -77,8 +89,22 @@ function Checkin() {
         value={stress}
         onChange={(e) => setStress(Number(e.target.value))}
       />
+<<<<<<< HEAD
 
       <p className="stress-value">{stress}</p>
+=======
+      <p>{stress}%</p>
+      <h2>Energie-Level</h2>
+
+      <input
+        type="range"
+        min="1"
+        max="10"
+        value={energie}
+        onChange={(e) => setEnergie(Number(e.target.value))}
+      />
+      <p>{energie}</p>
+>>>>>>> e66d430 (Implement US-002 Energielevel)
 
       <button onClick={handleSave}>
         Speichern
