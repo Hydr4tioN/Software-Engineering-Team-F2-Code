@@ -34,7 +34,7 @@ function Checkin() {
 
         body: JSON.stringify({
           stressLevel: stress,
-          energieLevel: energie,
+          energyLevel: energie,
           user_id: session.user.id
         })
       });
