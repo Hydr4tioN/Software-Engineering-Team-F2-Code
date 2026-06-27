@@ -81,7 +81,7 @@ import {
             <Line
               type="monotone"
               dataKey="energie"
-              stroke="#ffed4dc4"
+              stroke="#688768"
               strokeWidth={4}
             />
           </LineChart>
