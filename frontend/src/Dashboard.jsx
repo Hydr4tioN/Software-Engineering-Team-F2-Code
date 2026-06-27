@@ -1,88 +1,41 @@
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from "recharts";
+import Visualisierung from "./visualisierung";
 
 function Dashboard() {
-  const chartData = [
+
+  const demoEntries = [
     {
-      date: "Mo",
-      stress: 4,
-      energy: 7
+      id: 1,
+      stress_level: 3,
+      energie_level: 8,
+      entry_date: "2026-06-20"
     },
     {
-      date: "Di",
-      stress: 6,
-      energy: 5
+      id: 2,
+      stress_level: 5,
+      energie_level: 6,
+      entry_date: "2026-06-21"
     },
     {
-      date: "Mi",
-      stress: 8,
-      energy: 3
+      id: 3,
+      stress_level: 8,
+      energie_level: 3,
+      entry_date: "2026-06-22"
     },
     {
-      date: "Do",
-      stress: 5,
-      energy: 6
+      id: 4,
+      stress_level: 4,
+      energie_level: 7,
+      entry_date: "2026-06-23"
     }
   ];
 
   return (
-    <div>
-      <h2>Stress- und Energieverlauf</h2>
+    <div className="checkin-container">
 
-      <p>
-        Gemeinsames Diagramm für Stress- und Energiewerte.
-      </p>
+      <h1>Dashboard</h1>
 
-      <div style={{ width: "100%", height: 300 }}>
-        <ResponsiveContainer>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
+      <Visualisierung entries={demoEntries} />
 
-            <XAxis
-              dataKey="date"
-              label={{
-                value: "Zeit",
-                position: "insideBottom",
-                offset: -5
-              }}
-            />
-
-            <YAxis
-              label={{
-                value: "Wert 1-10",
-                angle: -90,
-                position: "insideLeft"
-              }}
-            />
-
-            <Tooltip />
-
-            <Legend />
-
-            <Line
-              type="monotone"
-              dataKey="stress"
-              name="Stresslevel"
-              stroke="#ff4d4f"
-            />
-
-            <Line
-              type="monotone"
-              dataKey="energy"
-              name="Energielevel"
-              stroke="#52c41a"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
     </div>
   );
 }

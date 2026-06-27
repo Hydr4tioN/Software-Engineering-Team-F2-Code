@@ -45,14 +45,14 @@ h1 {
     font-size: 34px;
     font-weight: 800;
     margin: 0 0 6px 0;
-    color: #1f2937;
+    color: #09182c;
 }
 
 h2 {
     font-size: 28px;
     font-weight: 800;
     margin: 0 0 4px 0;
-    color: #1f2937;
+    color: #0b1627;
 }
 
 h3 {
@@ -60,6 +60,13 @@ h3 {
     font-weight: 400;
     margin: 0 0 6px 0;
     color: #6b7280;
+}
+
+h6 {
+    font-size: 13px;
+    font-weight: 400;
+    margin: 0 0 6px 0;
+    color: #9ca3af;
 }
 
 form {
@@ -117,11 +124,9 @@ button.secondary:hover {
 }
 
 .nav-buttons {
-    width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin-top: 28px;
+    gap: 20px;
 }
 
 a {
@@ -135,8 +140,44 @@ a {
     text-align: center;
 }
 
+.bottom-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 440px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 12px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+}
 
-/* CHECKIN */
+.nav-item {
+    flex: 1;
+    text-decoration: none;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    transition: 0.2s;
+}
+
+.nav-item svg {
+    font-size: 18px;
+}
+
+.nav-item.active {
+    color: #4f5f4f;
+    transform: translateY(-2px);
+}
 
 .checkin-container {
     text-align: center;
@@ -202,4 +243,50 @@ a {
 
 .recharts-wrapper {
     margin-top: 20px;
+}
+
+.app-container {
+    max-width: 420px;
+    /* typische mobile App Breite */
+    margin: 0 auto;
+    /* zentriert */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.app {
+    flex: 1;
+}
+
+
+/* Bottom Bar hängt normal im Layout (nicht fixed!) */
+
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid #ddd;
+    background: white;
+    width: 100%;
+}
+
+
+/* einzelne Buttons */
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: black;
+    font-size: 12px;
+}
+
+
+/* Icon Größe */
+
+.nav-item svg {
+    font-size: 20px;
 }
