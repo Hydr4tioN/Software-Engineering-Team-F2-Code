@@ -8,6 +8,8 @@ function Register() {
     const [email, setEmail] = useState("");
     const [passwort, setPasswort] = useState("");
     const [error, setError] = useState("");
+    const [name, setName] = useState("");
+    const [vorname, setVorname] = useState("");
 
     async function handleSubmit(event) {
         event.preventDefault();
@@ -69,6 +71,17 @@ function Register() {
                     value={passwort}
                     onChange={(e) => setPasswort(e.target.value)}
                 />
+
+                <input type="name" placeholder="Name" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                />
+
+                <input type="vorname" placeholder ="Vorname" 
+                value={vorname}
+                onChange={(e) => setVorname(e.target.value)}
+                />
+
 
                 <button type="submit">
                     Registrieren

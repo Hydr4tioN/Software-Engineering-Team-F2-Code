@@ -16,10 +16,17 @@ function Home() {
           </Link>
 
           <Link to="/register">
-            <button className="secondary">
+            <button className="nav-buttons">
               Registrieren
             </button>
           </Link>
+
+          <Link to="/checkin">
+            <button className="secondary">
+              Ohne anmeldung zum Checkin
+            </button>
+          </Link>
+
         </div>
 
       </div>
