@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from '../supabaseClient'
 
 function Login() {
     const navigate = useNavigate();
@@ -8,7 +9,7 @@ function Login() {
     const [passwort, setPasswort] = useState("");
     const [error, setError] = useState("");
 
-function handleSubmit(e) {
+async function handleSubmit(e) {
         e.preventDefault();
 
         if (!email.trim()) {
@@ -20,7 +21,16 @@ function handleSubmit(e) {
             setError("Bitte Passwort eingeben");
             return;
         }
-
+        //supabase login added 
+        const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: passwort,
+        })
+        if (error) {
+        setError("Falsches Passwort oder E-Mail!");
+        return;
+    }
+        //navigates to checkin page if login is successful
         setError("");
         navigate("/checkin");
     }

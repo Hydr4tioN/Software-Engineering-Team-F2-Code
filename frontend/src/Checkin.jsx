@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import { supabase } from '../supabaseClient'; // 1. ADD THIS IMPORT! (Make sure the path is correct)
 const API_BASE_URL = "http://localhost:3000/api";
 
 function Checkin() {
@@ -29,8 +29,44 @@ function Checkin() {
     loadEntries();
   }, []);
 
-  function handleSave() {
+  async function handleSave() {
     console.log("Stress gespeichert:", stress);
+    
+    // Check for improper input
+    if(stress === 0) {
+      setError("Bitte wähle einen Stress-Level aus, bevor du speicherst.");
+      return;
+    }
+    
+    try {
+      setError(""); // clear error if input is valid
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setError("Du musst eingeloggt sein, um zu speichern!");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/entries`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          stressLevel: stress,
+          user_id: session.user.id // <--- Pitching the ID to the backend!
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Server returned an error");
+      }
+      
+      loadEntries();
+    } catch {
+      setError("Check-In konnte nicht gespeichert werden.");
+    }
   }
 
   return (
@@ -39,13 +75,13 @@ function Checkin() {
 
       <input
         type="range"
-        min="0"
-        max="100"
+        min="1"
+        max="10"
         value={stress}
         onChange={(e) => setStress(Number(e.target.value))}
       />
 
-      <p>{stress}%</p>
+      <p>{stress}</p>
 
       <button onClick={handleSave}>Speichern</button>
 
@@ -58,7 +94,9 @@ function Checkin() {
       ) : (
         <ul>
           {entries.map((entry) => (
-            <li key={entry.id}>{entry.text}</li>
+            <li key={entry.id}>
+            Stress: {entry.stress_level}% - {new Date(entry.entry_date).toLocaleString()}           
+             </li>
           ))}
         </ul>
       )}

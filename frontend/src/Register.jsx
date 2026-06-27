@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from '../supabaseClient'; 
 
 function Register() {
     const navigate = useNavigate();
@@ -8,9 +9,10 @@ function Register() {
     const [passwort, setPasswort] = useState("");
     const [error, setError] = useState("");
 
-    function handleSubmit(event) {
+    async function handleSubmit(event) {
         event.preventDefault();
 
+        //validation checks
         if (email.trim() === "") {
             setError("Bitte E-Mail eingeben");
             return;
@@ -26,12 +28,24 @@ function Register() {
             return;
         }
 
-        setError("");
+        try {
+            const { data, error: supabaseError } = await supabase.auth.signUp({
+                email: email,
+                password: passwort,
+            });
 
-        console.log("Formular gültig:", { email, passwort });
+            if (supabaseError) {
+                setError("Fehler: " + supabaseError.message);
+                return;
+            }
 
+            setError("");
+            alert("Erfolgreich registriert!");
+            navigate("/Checkin"); 
 
-        navigate("/Checkin");
+        } catch (err) {
+            setError("Verbindung zum Server fehlgeschlagen.");
+        }
     }
 
     return (
