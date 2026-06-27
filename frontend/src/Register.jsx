@@ -14,7 +14,7 @@ function Register() {
     async function handleSubmit(event) {
         event.preventDefault();
 
-        //validation checks
+
         if (email.trim() === "") {
             setError("Bitte E-Mail eingeben");
             return;
@@ -43,7 +43,7 @@ function Register() {
 
             setError("");
             alert("Erfolgreich registriert!");
-            navigate("/Checkin"); 
+            navigate("/Login"); 
 
         } catch (err) {
             setError("Verbindung zum Server fehlgeschlagen.");
