@@ -55,15 +55,18 @@ function Checkin() {
         },
         body: JSON.stringify({ 
           stressLevel: stress,
-          user_id: session.user.id // <--- Pitching the ID to the backend!
-        }),
+          energyLevel: energie,
+          user_id: session.user.id
+        })
       });
 
       if (!response.ok) {
-        throw new Error("Server returned an error");
+        const errorText = await response.text();
+        throw new Error(`Save failed: ${response.status} ${errorText}`);
       }
-      
-      loadEntries();
+
+      navigate("/dashboard");
+
     } catch {
       setError("Check-In konnte nicht gespeichert werden.");
     }
