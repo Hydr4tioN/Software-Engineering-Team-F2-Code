@@ -18,9 +18,9 @@ import {
   
       stress:
         entry.stress_level,
-  
+
       energy:
-        entry.energie_level
+        entry.energy_level
     }));
   
     return (

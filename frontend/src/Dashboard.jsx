@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSignOutAlt } from "react-icons/fa";
 import { supabase } from "../supabaseClient";
@@ -5,13 +6,50 @@ import Visualisierung from "./visualisierung";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const demoEntries = [
-    { id: 1, stress_level: 3, energie_level: 8, entry_date: "2026-06-20" },
-    { id: 2, stress_level: 5, energie_level: 6, entry_date: "2026-06-21" },
-    { id: 3, stress_level: 8, energie_level: 3, entry_date: "2026-06-22" },
-    { id: 4, stress_level: 4, energie_level: 7, entry_date: "2026-06-23" }
-  ];
+  useEffect(() => {
+    loadEntries();
+  }, []);
+
+  async function loadEntries() {
+    setLoading(true);
+    setError("");
+
+    const {
+      data: { session },
+      error: sessionError
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      setError("Session-Fehler: " + sessionError.message);
+      setLoading(false);
+      return;
+    }
+
+    if (!session) {
+      setError("Bitte einloggen");
+      setLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("stress_entries")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("entry_date", { ascending: true });
+
+    if (error) {
+      setError("Fehler beim Laden der Daten: " + error.message);
+      setLoading(false);
+      return;
+    }
+
+    setEntries(data || []);
+    setLoading(false);
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -20,13 +58,14 @@ function Dashboard() {
 
   return (
     <div className="checkin-container">
-
-
-      
-
       <h1>Dashboard</h1>
 
-      <Visualisierung entries={demoEntries} />
+      {loading && <p>Laden...</p>}
+      {error && <p className="error">{error}</p>}
+      {!loading && !error && entries.length === 0 && (
+        <p>Keine Einträge vorhanden.</p>
+      )}
+      {!loading && entries.length > 0 && <Visualisierung entries={entries} />}
 
       <button className="logout-btn-top" onClick={handleLogout}>
         <FaSignOutAlt />
