@@ -48,6 +48,7 @@ function Dashboard() {
     }
 
     setEntries(data || []);
+    console.log(data);
     setLoading(false);
   }
 
