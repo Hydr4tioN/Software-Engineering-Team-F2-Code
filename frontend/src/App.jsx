@@ -18,7 +18,7 @@ import "./App.css";
 function App() {
   const location = useLocation();
 
-  // Bottom Nav NICHT auf Home anzeigen
+
   const hideBottomNav = location.pathname === "/";
 
   return (

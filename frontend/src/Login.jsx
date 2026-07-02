@@ -21,7 +21,6 @@ async function handleSubmit(e) {
             setError("Bitte Passwort eingeben");
             return;
         }
-        //supabase login added 
         const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password: passwort,
@@ -30,7 +29,7 @@ async function handleSubmit(e) {
         setError("Falsches Passwort oder E-Mail!");
         return;
     }
-        //navigates to checkin page if login is successful
+
         setError("");
         navigate("/checkin");
     }
