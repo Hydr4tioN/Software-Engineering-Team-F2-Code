@@ -20,7 +20,7 @@ function Visualisierung({ entries }) {
     : "-";
 
   const chartData = entries.map((entry, index) => ({
-  date: new Date(entry.created_at).toLocaleString("de-DE", {
+  date: new Date(entry.entry_date).toLocaleString("de-DE", {
     timeZone: "Europe/Berlin",
     hour: "2-digit",
     minute: "2-digit",

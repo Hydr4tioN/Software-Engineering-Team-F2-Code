@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Geheimnisse (Secret Key!) nie committen
+backend_neu/.env
+
+# Archive
+*.zip

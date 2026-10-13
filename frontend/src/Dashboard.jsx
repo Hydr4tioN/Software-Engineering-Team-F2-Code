@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSignOutAlt } from "react-icons/fa";
-import { supabase } from "../supabaseClient";
+import { supabase } from "./supabaseClient";
 import Visualisierung from "./visualisierung";
 
 function Dashboard() {
