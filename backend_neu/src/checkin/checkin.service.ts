@@ -1,36 +1,33 @@
 import {
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { CreateCheckinDto } from './dto/create-checkin.dto';
 import { UpdateCheckinDto } from './dto/update-checkin.dto';
 
+/**
+ * Jede Methode bekommt den Supabase-Client des eingeloggten Users (aus dem Guard)
+ * und dessen userId. Die userId kommt aus dem geprüften Token, NIE aus dem Request-Body.
+ */
 @Injectable()
 export class CheckinService {
-  private supabase: SupabaseClient;
+  private readonly logger = new Logger(CheckinService.name);
 
-  constructor() {
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error(
-        'Missing Supabase environment variables: SUPABASE_URL or SUPABASE_KEY',
-      );
-    }
-
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+  private fail(action: string, message: string): never {
+    this.logger.error(`${action} fehlgeschlagen: ${message}`);
+    throw new InternalServerErrorException(`Supabase error: ${message}`);
   }
 
-  async create(dto: CreateCheckinDto) {
-    const { data, error } = await this.supabase
+  async create(supabase: SupabaseClient, userId: string, dto: CreateCheckinDto) {
+    const { data, error } = await supabase
       .from('stress_entries')
       .insert([
         {
-          user_id: dto.user_id,
-          stress_level: dto.stressLevel ?? 0,
+          user_id: userId,
+          stress_level: dto.stressLevel,
           category: dto.category,
           note: dto.note,
           energy_level: dto.energyLevel,
@@ -38,42 +35,41 @@ export class CheckinService {
       ])
       .select();
 
-    if (error) {
-      throw new InternalServerErrorException(`Supabase error: ${error.message}`);
-    }
+    if (error) this.fail('create', error.message);
     return data?.[0];
   }
 
-  async findAll() {
-    const { data, error } = await this.supabase
+  async findAll(supabase: SupabaseClient, userId: string) {
+    const { data, error } = await supabase
       .from('stress_entries')
       .select('*')
+      .eq('user_id', userId)
       .order('entry_date', { ascending: false });
 
-    if (error) {
-      throw new InternalServerErrorException(`Supabase error: ${error.message}`);
-    }
+    if (error) this.fail('findAll', error.message);
     return data || [];
   }
 
-  async findOne(id: string) {
-    const { data, error } = await this.supabase
+  async findOne(supabase: SupabaseClient, userId: string, id: string) {
+    const { data, error } = await supabase
       .from('stress_entries')
       .select('*')
       .eq('id', id)
+      .eq('user_id', userId)
       .maybeSingle();
 
-    if (error) {
-      throw new InternalServerErrorException(`Supabase error: ${error.message}`);
-    }
-    if (!data) {
-      throw new NotFoundException(`Eintrag ${id} nicht gefunden`);
-    }
+    if (error) this.fail('findOne', error.message);
+    if (!data) throw new NotFoundException(`Eintrag ${id} nicht gefunden`);
     return data;
   }
 
-  async update(id: string, dto: UpdateCheckinDto) {
-    const { data, error } = await this.supabase
+  async update(
+    supabase: SupabaseClient,
+    userId: string,
+    id: string,
+    dto: UpdateCheckinDto,
+  ) {
+    const { data, error } = await supabase
       .from('stress_entries')
       .update({
         stress_level: dto.stressLevel,
@@ -82,24 +78,24 @@ export class CheckinService {
         energy_level: dto.energyLevel,
       })
       .eq('id', id)
+      .eq('user_id', userId)
       .select();
 
-    if (error) {
-      throw new InternalServerErrorException(`Supabase error: ${error.message}`);
-    }
-    return data?.[0];
+    if (error) this.fail('update', error.message);
+    if (!data?.length) throw new NotFoundException(`Eintrag ${id} nicht gefunden`);
+    return data[0];
   }
 
-  async remove(id: string) {
-    const { data, error } = await this.supabase
+  async remove(supabase: SupabaseClient, userId: string, id: string) {
+    const { data, error } = await supabase
       .from('stress_entries')
       .delete()
       .eq('id', id)
+      .eq('user_id', userId)
       .select();
 
-    if (error) {
-      throw new InternalServerErrorException(`Supabase error: ${error.message}`);
-    }
-    return data?.[0];
+    if (error) this.fail('remove', error.message);
+    if (!data?.length) throw new NotFoundException(`Eintrag ${id} nicht gefunden`);
+    return data[0];
   }
 }

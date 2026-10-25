@@ -1,7 +1,7 @@
+// user_id wird bewusst NICHT vom Client angenommen – sie kommt aus dem Login-Token.
 export class CreateCheckinDto {
-  user_id?: string;      // <--- ADD THIS LINE!
   stressLevel?: number;
   category?: string;
   note?: string;
   energyLevel?: number;
-}   
+}

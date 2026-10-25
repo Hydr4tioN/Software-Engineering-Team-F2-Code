@@ -1,7 +1,18 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { CheckinService } from './checkin.service';
 import { CreateCheckinDto } from './dto/create-checkin.dto';
 import { UpdateCheckinDto } from './dto/update-checkin.dto';
+import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
 
 @Controller('api')
 export class CheckinController {
@@ -12,28 +23,33 @@ export class CheckinController {
     return { status: 'ok', timestamp: new Date().toISOString() };
   }
 
+  @UseGuards(SupabaseAuthGuard)
   @Post('entries')
-  create(@Body() dto: CreateCheckinDto) {
-    return this.checkinService.create(dto);
+  create(@Req() req, @Body() dto: CreateCheckinDto) {
+    return this.checkinService.create(req.supabase, req.user.id, dto);
   }
 
+  @UseGuards(SupabaseAuthGuard)
   @Get('entries')
-  findAll() {
-    return this.checkinService.findAll();
+  findAll(@Req() req) {
+    return this.checkinService.findAll(req.supabase, req.user.id);
   }
 
+  @UseGuards(SupabaseAuthGuard)
   @Get('entries/:id')
-  findOne(@Param('id') id: string) {
-    return this.checkinService.findOne(id);
+  findOne(@Req() req, @Param('id') id: string) {
+    return this.checkinService.findOne(req.supabase, req.user.id, id);
   }
 
+  @UseGuards(SupabaseAuthGuard)
   @Patch('entries/:id')
-  update(@Param('id') id: string, @Body() dto: UpdateCheckinDto) {
-    return this.checkinService.update(id, dto);
+  update(@Req() req, @Param('id') id: string, @Body() dto: UpdateCheckinDto) {
+    return this.checkinService.update(req.supabase, req.user.id, id, dto);
   }
 
+  @UseGuards(SupabaseAuthGuard)
   @Delete('entries/:id')
-  remove(@Param('id') id: string) {
-    return this.checkinService.remove(id);
+  remove(@Req() req, @Param('id') id: string) {
+    return this.checkinService.remove(req.supabase, req.user.id, id);
   }
 }
