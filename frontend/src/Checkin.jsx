@@ -25,16 +25,20 @@
 
     const res = await fetch(`${API_BASE_URL}/entries`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`
+      },
       body: JSON.stringify({
         stressLevel: stress,
-        energyLevel: energie,
-        user_id: session.user.id
+        energyLevel: energie
       })
     });
 
     if (!res.ok) {
-      setError("Speichern fehlgeschlagen");
+      const body = await res.json().catch(() => ({}));
+      console.error("Check-in fehlgeschlagen:", res.status, body);
+      setError("Speichern fehlgeschlagen: " + (body.message ?? res.status));
       return;
     }
 
