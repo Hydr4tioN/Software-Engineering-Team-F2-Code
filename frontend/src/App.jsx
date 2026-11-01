@@ -4,20 +4,19 @@ import Register from "./Register.jsx";
 import Checkin from "./Checkin.jsx";
 import Dashboard from "./Dashboard.jsx";
 import Login from "./Login.jsx";
+import Ereignisse from "./Ereignisse.jsx";
 
 import {
   FaHome,
   FaHeart,
   FaChartLine,
-  FaLightbulb,
-  FaCog
+  FaCalendarAlt
 } from "react-icons/fa";
 
 import "./App.css";
 
 function App() {
   const location = useLocation();
-
 
   const hideBottomNav = location.pathname === "/";
 
@@ -29,6 +28,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/checkin" element={<Checkin />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/ereignisse" element={<Ereignisse />} />
           <Route path="/login" element={<Login />} />
         </Routes>
       </main>
@@ -45,14 +45,15 @@ function App() {
             <span>Check In</span>
           </NavLink>
 
+          <NavLink to="/ereignisse" className="nav-item">
+            <FaCalendarAlt />
+            <span>Ereignisse</span>
+          </NavLink>
+
           <NavLink to="/dashboard" className="nav-item">
             <FaChartLine />
             <span>Verlauf</span>
           </NavLink>
-
-
-
-
         </nav>
       )}
     </>
