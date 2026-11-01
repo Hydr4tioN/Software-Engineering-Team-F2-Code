@@ -1,0 +1,91 @@
+
+.kalender-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+  color: #1f2937;
+}
+
+.kalender-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.kalender-header h1 {
+  font-size: 28px;
+  color: #09182c;
+}
+
+.kalender-header input {
+  width: auto;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid #dce5dc;
+  border-radius: 12px;
+  background: white;
+}
+
+.kalender-date {
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #4f5f4f;
+  text-transform: capitalize;
+}
+
+.kalender-grid {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  border-top: 1px solid #e5e7eb;
+}
+
+.kalender-times {
+  text-align: right;
+  padding-right: 12px;
+}
+
+.kalender-hour {
+  height: 60px;
+  box-sizing: border-box;
+  padding-top: 5px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.kalender-end-time {
+  padding-top: 5px;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.kalender-timeline {
+  min-height: 1440px;
+  border-left: 1px solid #dce5dc;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.kalender-hour-line {
+  height: 59px;
+  border-bottom: 1px solid #e5e7eb;
+  box-sizing: content-box;
+}
+
+@media (max-width: 600px) {
+  .kalender-container {
+    padding: 16px;
+  }
+
+  .kalender-header h1 {
+    font-size: 23px;
+  }
+
+  .kalender-grid {
+    grid-template-columns: 55px minmax(0, 1fr);
+  }
+}
