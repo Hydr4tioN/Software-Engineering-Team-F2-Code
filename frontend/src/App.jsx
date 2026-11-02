@@ -4,12 +4,15 @@ import Register from "./Register.jsx";
 import Checkin from "./Checkin.jsx";
 import Dashboard from "./Dashboard.jsx";
 import Login from "./Login.jsx";
+import Kalender from "./Kalender.jsx";
 import Ereignisse from "./Ereignisse.jsx";
 
 import {
   FaHome,
   FaHeart,
   FaChartLine,
+  FaLightbulb,
+  FaCog,
   FaCalendarAlt
 } from "react-icons/fa";
 
@@ -28,6 +31,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/checkin" element={<Checkin />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/kalender" element={<Kalender />} />
           <Route path="/ereignisse" element={<Ereignisse />} />
           <Route path="/login" element={<Login />} />
         </Routes>
@@ -54,6 +58,15 @@ function App() {
             <FaChartLine />
             <span>Verlauf</span>
           </NavLink>
+
+          <NavLink to="/kalender" className="nav-item">
+            <FaCalendarAlt />
+            <span>Tagesansicht</span>
+          </NavLink>
+
+
+
+
         </nav>
       )}
     </>
