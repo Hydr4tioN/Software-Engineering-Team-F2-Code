@@ -5,6 +5,8 @@ import Checkin from "./Checkin.jsx";
 import Dashboard from "./Dashboard.jsx";
 import Login from "./Login.jsx";
 import Kalender from "./Kalender.jsx";
+import Ereignisse from "./Ereignisse.jsx";
+
 import {
   FaHome,
   FaHeart,
@@ -19,7 +21,6 @@ import "./App.css";
 function App() {
   const location = useLocation();
 
-
   const hideBottomNav = location.pathname === "/";
 
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/checkin" element={<Checkin />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/kalender" element={<Kalender />} />
+          <Route path="/ereignisse" element={<Ereignisse />} />
           <Route path="/login" element={<Login />} />
         </Routes>
       </main>
@@ -45,6 +47,11 @@ function App() {
           <NavLink to="/checkin" className="nav-item">
             <FaHeart />
             <span>Check In</span>
+          </NavLink>
+
+          <NavLink to="/ereignisse" className="nav-item">
+            <FaCalendarAlt />
+            <span>Ereignisse</span>
           </NavLink>
 
           <NavLink to="/dashboard" className="nav-item">
