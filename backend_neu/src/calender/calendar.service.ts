@@ -17,6 +17,13 @@ export class CalendarService {
   ) {}
 
   async getDay(date: string, userId: string) {
+    
+if (!date || typeof date !== 'string') {
+  throw new BadRequestException(
+    'Bitte ein Datum angeben',
+  );
+}
+
     // Datum im Format YYYY-MM-DD prüfen
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? '')) {
       throw new BadRequestException(
