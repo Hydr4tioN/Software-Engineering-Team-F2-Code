@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateEventDto } from './dto/create-event.dto';
 import { CreateEventOccurrenceDto } from './dto/create-event-occurrence.dto';
 
@@ -39,22 +45,9 @@ export class EventsService {
     eventId: string,
     dto: CreateEventOccurrenceDto,
   ) {
-    const hasDate = !!dto.eventDate;
-    const hasWeekday = dto.weekday !== undefined && dto.weekday !== null;
-
-    if (hasDate === hasWeekday) {
+    if (!dto.eventDate || !/^\d{4}-\d{2}-\d{2}$/.test(dto.eventDate)) {
       throw new BadRequestException(
-        'Bitte geben Sie entweder ein Datum oder einen Wochentag an.',
-      );
-    }
-
-    if (hasWeekday && (
-      !Number.isInteger(dto.weekday) ||
-      dto.weekday! < 1 ||
-      dto.weekday! > 7
-    )) {
-      throw new BadRequestException(
-        'Der Wochentag muss zwischen 1 (Montag) und 7 (Sonntag) liegen.',
+        'Bitte geben Sie ein Datum im Format YYYY-MM-DD an.',
       );
     }
 
@@ -89,8 +82,28 @@ export class EventsService {
     }
 
     if (!event) {
-      throw new NotFoundException(
-        'Ereignis nicht gefunden.',
+      throw new NotFoundException('Ereignis nicht gefunden.');
+    }
+
+    // Keine Überschneidung mit anderen Terminen desselben Nutzers
+    const { data: clashes, error: clashError } = await supabase
+      .from('event_occurrences')
+      .select('id, events!inner(name, user_id)')
+      .eq('event_date', dto.eventDate)
+      .eq('events.user_id', userId)
+      .lt('start_time', dto.endTime)
+      .gt('end_time', dto.startTime)
+      .limit(1);
+
+    if (clashError) {
+      throw new InternalServerErrorException(
+        'Die Terminprüfung ist fehlgeschlagen.',
+      );
+    }
+
+    if (clashes && clashes.length > 0) {
+      throw new ConflictException(
+        'Zu dieser Zeit gibt es bereits ein anderes Ereignis.',
       );
     }
 
@@ -98,8 +111,7 @@ export class EventsService {
       .from('event_occurrences')
       .insert({
         event_id: eventId,
-        event_date: dto.eventDate ?? null,
-        weekday: dto.weekday ?? null,
+        event_date: dto.eventDate,
         start_time: dto.startTime,
         end_time: dto.endTime,
       })
