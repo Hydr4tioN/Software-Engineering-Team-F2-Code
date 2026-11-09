@@ -1,9 +1,27 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./Kalender.css";
+import StressShield from "./StressShield";
+import { listEvents } from "./eventsApi";
+import { stressToleranceForDay } from "./stressTolerance";
 
 function Kalender() {
   const [selectedDate, setSelectedDate] = useState("2026-10-31");
+
+  // Ereignisse für die Stresstoleranz-Anzeige (#200)
+  const [events, setEvents] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+    listEvents()
+      .then((data) => active && setEvents(data))
+      .catch(() => active && setEvents(null));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const stressTolerance = events ? stressToleranceForDay(events, selectedDate) : null;
 
   const hours = Array.from({ length: 24 }, (_, index) => index);
 
@@ -33,6 +51,8 @@ function Kalender() {
       <div className="kalender-date">
         {germanDate}
       </div>
+
+      <StressShield value={stressTolerance} max={100} />
 
       <div className="kalender-grid">
         <div className="kalender-times">
