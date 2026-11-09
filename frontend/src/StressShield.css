@@ -1,0 +1,54 @@
+.stress-shield {
+  --shield-color: #3b6fd8;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border: 1px solid #dce5dc;
+  border-radius: 12px;
+  background: white;
+  min-width: 220px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.stress-shield--ok { --shield-color: #3b6fd8; }
+.stress-shield--low { --shield-color: #b9483f; }
+.stress-shield--unknown { --shield-color: #9ca3af; }
+
+.stress-shield__icon {
+  font-size: 26px;
+  color: var(--shield-color);
+  flex-shrink: 0;
+}
+
+.stress-shield__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stress-shield__label {
+  text-align: left;
+  font-size: 12px;
+  color: #4f5f4f;
+}
+
+.stress-shield__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.stress-shield__fill {
+  height: 100%;
+  background: var(--shield-color);
+  transition: width 0.3s ease;
+}
+
+.stress-shield__value {
+  font-variant-numeric: tabular-nums;
+  color: #09182c;
+}
