@@ -76,6 +76,75 @@
   box-sizing: content-box;
 }
 
+/* Ansicht wechseln */
+.kalender-view-switch {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 5px;
+  background: #eef3ee;
+  border-radius: 14px;
+}
+
+.kalender-view-switch button {
+  width: auto;
+  flex: 1;
+  margin: 0;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #4f5f4f;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.kalender-view-switch button.active {
+  background: #4f5f4f;
+  color: white;
+}
+
+/* Wochenansicht */
+.kalender-week-grid {
+  display: grid;
+  grid-template-columns: 55px repeat(7, minmax(100px, 1fr));
+  overflow-x: auto;
+  border-top: 1px solid #e5e7eb;
+}
+
+.kalender-week-times {
+  text-align: right;
+  padding-right: 8px;
+  padding-top: 55px;
+}
+
+.kalender-week-column {
+  min-width: 100px;
+  border-left: 1px solid #dce5dc;
+}
+
+.kalender-week-heading {
+  height: 55px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 12px;
+  background: #eef3ee;
+  color: #4f5f4f;
+}
+
+.kalender-week-timeline {
+  min-height: 1440px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.kalender-week-timeline .kalender-hour-line {
+  height: 59px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
 @media (max-width: 600px) {
   .kalender-container {
     padding: 16px;
