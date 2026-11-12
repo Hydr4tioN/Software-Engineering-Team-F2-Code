@@ -61,7 +61,7 @@ function App() {
 
           <NavLink to="/kalender" className="nav-item">
             <FaCalendarAlt />
-            <span>Tagesansicht</span>
+            <span>Kalender</span>
           </NavLink>
 
 
