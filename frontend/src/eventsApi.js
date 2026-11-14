@@ -23,8 +23,5 @@ async function request(path, options = {}) {
 
 export const listEvents = () => request("/events");
 
-export const createEvent = (name, loadLevel) =>
-  request("/events", { method: "POST", body: JSON.stringify({ name, loadLevel }) });
-
 export const addOccurrence = (eventId, occurrence) =>
   request(`/events/${eventId}/occurrences`, { method: "POST", body: JSON.stringify(occurrence) });
