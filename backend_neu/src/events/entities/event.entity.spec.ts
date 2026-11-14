@@ -5,7 +5,7 @@ describe('EventOccurrence Entity', () => {
     const occurrence = new EventOccurrence('event-1', 'user-1', '10:00', '12:00', '2026-11-20', null);
     
     expect(occurrence.isRepeat).toBe(false);
-    expect(occurrence.getTargetWeekday()).toBe(5); // 2026-11-20 là thứ 6
+    expect(occurrence.getTargetWeekday()).toBe(5);
   });
 
   it('should throw an error if start time is after end time', () => {
