@@ -43,7 +43,7 @@ export class EventsService {
       throw new BadRequestException(error.message.replace('DOMAIN_ERROR: ', ''));
     }
 
-    // 3. Hochladen aller bestehenden EventOccurrences des Benutzers aus der Datenbank (Persistence)
+    //Hochladen aller bestehenden EventOccurrences des Benutzers aus der Datenbank (Persistence)
     const { data: occurrences, error: occurrenceError } = await supabase
       .from('event_occurrences')
       .select('id, event_date, weekday, start_time, end_time, repeat')
@@ -51,12 +51,12 @@ export class EventsService {
 
     if (occurrenceError) throw new InternalServerErrorException('Die Terminprüfung ist fehlgeschlagen.');
 
-    // 4. Policy-Überprüfung: Überprüfen, ob es einen Terminüberschneidung gibt
+    //Policy-Überprüfung: Überprüfen, ob es einen Terminüberschneidung gibt
     if (ScheduleClashPolicy.hasClash(newOccurrence, occurrences ?? [])) {
       throw new ConflictException('Zu dieser Zeit gibt es bereits ein anderes Ereignis.');
     }
 
-    // 5. Speichern des neuen EventOccurrence in der Datenbank (Persistence)  
+    //Speichern des neuen EventOccurrence in der Datenbank (Persistence)  
     const { data, error } = await supabase
       .from('event_occurrences')
       .insert({
