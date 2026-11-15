@@ -149,6 +149,47 @@ export class EventsService {
     return data;
   }
   
+async findForSelection(
+  supabase: any,
+  userId: string,
+) {
+  // Ereignisse des angemeldeten Benutzers laden
+  const { data, error } = await supabase
+    .from('events')
+    .select('id, name, is_static')
+    .eq('user_id', userId)
+    .order('name', { ascending: true });
+
+  if (error) {
+    throw new InternalServerErrorException(
+      'Die Ereignisse konnten nicht geladen werden.',
+    );
+  }
+
+  const events = data ?? [];
+
+  // Statische Ereignisse filtern
+  const staticEvents = events
+    .filter((event: any) => event.is_static === true)
+    .map((event: any) => ({
+      id: event.id,
+      name: event.name,
+    }));
+
+  // Normale Ereignisse filtern
+  const normalEvents = events
+    .filter((event: any) => event.is_static !== true)
+    .map((event: any) => ({
+      id: event.id,
+      name: event.name,
+    }));
+
+  return {
+    normalEvents,
+    staticEvents,
+  };
+}
+
   async findAll(supabase: any, userId: string) {
     const { data, error } = await supabase
       .from('events')

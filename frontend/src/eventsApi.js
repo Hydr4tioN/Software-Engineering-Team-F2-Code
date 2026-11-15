@@ -25,3 +25,7 @@ export const listEvents = () => request("/events");
 
 export const addOccurrence = (eventId, occurrence) =>
   request(`/events/${eventId}/occurrences`, { method: "POST", body: JSON.stringify(occurrence) });
+
+export const listEventsForSelection = () =>
+  request("/events/selection");
+
