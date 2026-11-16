@@ -80,6 +80,7 @@ export class EventsService {
     const { data, error } = await supabase
       .from('events')
       .select('*, event_occurrences(*)')
+      .eq('event_occurrences.user_id', userId)
       .order('created_at', { ascending: false });
 
     if (error) {
