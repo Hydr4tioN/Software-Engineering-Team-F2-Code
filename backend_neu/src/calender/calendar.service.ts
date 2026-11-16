@@ -1,33 +1,40 @@
 
 import {
   BadRequestException,
-  Inject,
   Injectable,
+  InternalServerErrorException,
 } from '@nestjs/common';
 
+type CalendarDayEvent = {
+  id: string;
+  event_id: string;
+  name: string;
+  start_time: string;
+  end_time: string;
+};
 
-import { CALENDAR_DATA_SOURCE } from './calendar.types';
-import type { CalendarDataSource } from './calendar.types';
+type CalendarWeekEvent = {
+  id: string;
+  event_id: string;
+  name: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+};
 
 @Injectable()
 export class CalendarService {
-  constructor(
-    @Inject(CALENDAR_DATA_SOURCE)
-    private readonly dataSource: CalendarDataSource,
-  ) {}
 
-  async getDay(date: string, userId: string) {
-    
-if (!date || typeof date !== 'string') {
-  throw new BadRequestException(
-    'Bitte ein Datum angeben',
-  );
-}
-
-    // Datum im Format YYYY-MM-DD prüfen
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date ?? '')) {
+  // TAGESANSICHT
+  async getDay(
+    supabase: any,
+    userId: string,
+    date: string,
+  ) {
+    // Datum validieren
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       throw new BadRequestException(
-        'Datum muss im Format YYYY-MM-DD sein',
+        'Datum muss im Format YYYY-MM-DD angegeben werden.',
       );
     }
 
@@ -37,38 +44,160 @@ if (!date || typeof date !== 'string') {
       Number.isNaN(selectedDate.getTime()) ||
       selectedDate.toISOString().slice(0, 10) !== date
     ) {
-      throw new BadRequestException('Ungültiges Datum');
+      throw new BadRequestException('Ungültiges Datum.');
     }
 
-    // ISO-Wochentag: Montag = 1, Sonntag = 7
+    // Wochentag berechnen
     const weekday = selectedDate.getUTCDay() || 7;
 
-    const occurrences =
-      await this.dataSource.findOccurrences(userId);
+    // Ereignisse aus Supabase laden
+    const { data, error } = await supabase
+      .from('events')
+      .select('id, name, event_occurrences(*)')
+      .eq('user_id', userId);
 
-    const events = occurrences
-      .filter((occurrence) => {
-        // Einmalige Termine
-        if (occurrence.event_date !== null) {
-          return occurrence.event_date === date;
+    if (error) {
+      throw new InternalServerErrorException(
+        'Die Kalenderereignisse konnten nicht geladen werden.',
+      );
+    }
+
+    // Ereignisse des ausgewählten Tages filtern
+    const events: CalendarDayEvent[] = [];
+
+    for (const event of data ?? []) {
+      for (const occurrence of event.event_occurrences ?? []) {
+        if (
+          occurrence.event_date === date ||
+          (
+            occurrence.event_date === null &&
+            occurrence.weekday === weekday
+          )
+        ) {
+          events.push({
+            id: occurrence.id,
+            event_id: event.id,
+            name: event.name,
+            start_time: occurrence.start_time,
+            end_time: occurrence.end_time,
+          });
         }
+      }
+    }
 
-        // Wöchentlich wiederkehrende Termine
-        return occurrence.weekday === weekday;
-      })
-      .sort((a, b) =>
-        a.start_time.localeCompare(b.start_time),
-      )
-      .map((occurrence) => ({
-        id: occurrence.id,
-        event_id: occurrence.event_id,
-        name: occurrence.name,
-        start_time: occurrence.start_time,
-        end_time: occurrence.end_time,
-      }));
+    // Nach Uhrzeit sortieren
+    events.sort((a, b) =>
+      a.start_time.localeCompare(b.start_time),
+    );
 
     return {
       date,
+      events,
+    };
+  }
+
+  // WOCHENANSICHT
+  async getWeek(
+    supabase: any,
+    userId: string,
+    date: string,
+  ) {
+    // Datum validieren
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new BadRequestException(
+        'Datum muss im Format YYYY-MM-DD angegeben werden.',
+      );
+    }
+
+    const selectedDate = new Date(`${date}T12:00:00Z`);
+
+    if (
+      Number.isNaN(selectedDate.getTime()) ||
+      selectedDate.toISOString().slice(0, 10) !== date
+    ) {
+      throw new BadRequestException('Ungültiges Datum.');
+    }
+
+    // Montag der Woche berechnen
+    const weekday = selectedDate.getUTCDay() || 7;
+
+    const monday = new Date(selectedDate);
+    monday.setUTCDate(
+      monday.getUTCDate() - weekday + 1,
+    );
+
+    // Alle sieben Tage erstellen
+    const weekDates: string[] = [];
+
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(monday);
+      day.setUTCDate(monday.getUTCDate() + i);
+      weekDates.push(day.toISOString().slice(0, 10));
+    }
+
+    const weekStart = weekDates[0];
+    const weekEnd = weekDates[6];
+
+    // Ereignisse aus Supabase laden
+    const { data, error } = await supabase
+      .from('events')
+      .select('id, name, event_occurrences(*)')
+      .eq('user_id', userId);
+
+    if (error) {
+      throw new InternalServerErrorException(
+        'Die Kalenderereignisse konnten nicht geladen werden.',
+      );
+    }
+
+    // Ereignisse der Woche filtern
+    const events: CalendarWeekEvent[] = [];
+
+    for (const event of data ?? []) {
+      for (const occurrence of event.event_occurrences ?? []) {
+
+        // Einmalige Ereignisse
+        if (occurrence.event_date !== null) {
+          if (
+            occurrence.event_date >= weekStart &&
+            occurrence.event_date <= weekEnd
+          ) {
+            events.push({
+              id: occurrence.id,
+              event_id: event.id,
+              name: event.name,
+              date: occurrence.event_date,
+              start_time: occurrence.start_time,
+              end_time: occurrence.end_time,
+            });
+          }
+        } else {
+          // Wöchentlich wiederkehrende Ereignisse
+          for (let i = 0; i < 7; i++) {
+            if (occurrence.weekday === i + 1) {
+              events.push({
+                id: occurrence.id,
+                event_id: event.id,
+                name: event.name,
+                date: weekDates[i],
+                start_time: occurrence.start_time,
+                end_time: occurrence.end_time,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Nach Datum und Uhrzeit sortieren
+    events.sort((a, b) =>
+      a.date.localeCompare(b.date) ||
+      a.start_time.localeCompare(b.start_time),
+    );
+
+    return {
+      week_start: weekStart,
+      week_end: weekEnd,
       events,
     };
   }
