@@ -30,10 +30,10 @@ export class EventsService {
     } catch (error: any) {
       throw new BadRequestException(error.message.replace('DOMAIN_ERROR: ', ''));
     }
-    //Lấy dữ liệu qua Repository
+    //Daten durch das Repository abrufen, um Konflikte zu überprüfen
     const existingOccurrences = await this.eventRepo.getOccurrencesByUser(userId, supabase);
 
-    // 4. Domain Logic: Áp dụng Policy kiểm tra chéo
+    // Domain Logic: Policy Check
     if (ScheduleClashPolicy.hasClash(newOccurrence, existingOccurrences)) {
       throw new ConflictException('Zu dieser Zeit gibt es bereits ein anderes Ereignis.');
     }
@@ -43,17 +43,7 @@ export class EventsService {
   }
   
   async findAll(supabase: any, userId: string) {
-    const { data, error } = await supabase
-      .from('events')
-      .select('*, event_occurrences(*)')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      throw new InternalServerErrorException(
-        'Die Ereignisse konnten nicht geladen werden.',
-      );
-    }
-
+    const data = await this.eventRepo.findAllEvents(userId, supabase);
     return data;
   }
 }

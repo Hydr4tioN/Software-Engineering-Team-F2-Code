@@ -45,4 +45,15 @@ export class SupabaseEventRepository implements EventRepository {
     if (error) throw new InternalServerErrorException('Der Ereignistermin konnte nicht erstellt werden.');
     return data;
   }
+
+  async findAllEvents(userId: string, supabase: any): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('events')
+      .select('*, event_occurrences(*)')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw new InternalServerErrorException('Die Ereignisse konnten nicht geladen werden.');
+    return data || [];
+  }
 }
