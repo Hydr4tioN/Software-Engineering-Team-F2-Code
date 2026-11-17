@@ -48,12 +48,14 @@ export class SupabaseEventRepository implements EventRepository {
 
   async findAllEvents(userId: string, supabase: any): Promise<any[]> {
     const { data, error } = await supabase
-      .from('events')
+      .from('events') 
       .select('*, event_occurrences(*)')
-      .eq('user_id', userId)
+      .eq('event_occurrences.user_id', userId) 
       .order('created_at', { ascending: false });
 
-    if (error) throw new InternalServerErrorException('Die Ereignisse konnten nicht geladen werden.');
+    if (error) {
+      throw new InternalServerErrorException('Die Ereignisse konnten nicht geladen werden.');
+    }
     return data || [];
   }
 }
