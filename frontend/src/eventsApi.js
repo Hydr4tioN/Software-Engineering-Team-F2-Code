@@ -29,3 +29,6 @@ export const addOccurrence = (eventId, occurrence) =>
 export const listEventsForSelection = () =>
   request("/events/selection");
 
+// Stresstoleranz eines Tages vom Backend (#220). Das Frontend rechnet nicht selbst (#200).
+export const getStressTolerance = (date) =>
+  request(`/stress-tolerance?date=${encodeURIComponent(date)}`);

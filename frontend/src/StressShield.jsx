@@ -1,16 +1,14 @@
 import { FaShieldAlt } from "react-icons/fa";
+import { shieldState } from "./stressShieldState";
 import "./StressShield.css";
 
 // Reine Anzeige der Stresstoleranz (#200). Kennt keine Datenquelle:
-// Wert und Maximum kommen als Props (Maximum später ≠ 100, z. B. mit Bonus).
+// Wert und Maximum kommen als Props vom Backend (#220).
 function StressShield({ value, max = 100 }) {
-  const known = typeof value === "number";
-  const ratio = known && max > 0 ? Math.min(1, Math.max(0, value / max)) : 0;
-  // Laut Wireframe: Standard blau, unter 20 % rot (Schwelle der Warnung)
-  const level = ratio < 0.2 ? "low" : "ok";
+  const { level, percent, text } = shieldState(value, max);
 
   return (
-    <div className={`stress-shield stress-shield--${known ? level : "unknown"}`}>
+    <div className={`stress-shield stress-shield--${level}`}>
       <FaShieldAlt className="stress-shield__icon" aria-hidden="true" />
       <div className="stress-shield__body">
         <span className="stress-shield__label">Stresstoleranz</span>
@@ -20,14 +18,12 @@ function StressShield({ value, max = 100 }) {
           aria-label="Stresstoleranz"
           aria-valuemin={0}
           aria-valuemax={max}
-          aria-valuenow={known ? value : undefined}
+          aria-valuenow={level === "unknown" ? undefined : value}
         >
-          <div className="stress-shield__fill" style={{ width: `${ratio * 100}%` }} />
+          <div className="stress-shield__fill" style={{ width: `${percent}%` }} />
         </div>
       </div>
-      <strong className="stress-shield__value">
-        {known ? value : "–"}/{max}
-      </strong>
+      <strong className="stress-shield__value">{text}</strong>
     </div>
   );
 }
