@@ -1,24 +1,36 @@
 
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+
 import { SupabaseAuthGuard } from '../auth/supabase-auth.guard';
 import { EventsService } from './events.service';
-import { CreateEventDto } from './dto/create-event.dto';
 import { CreateEventOccurrenceDto } from './dto/create-event-occurrence.dto';
 
 @Controller('api/events')
 @UseGuards(SupabaseAuthGuard)
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(
+    private readonly eventsService: EventsService,
+  ) {}
 
-  @Post()
-  createEvent(@Req() req: any, @Body() dto: CreateEventDto) {
-    return this.eventsService.createEvent(
+  // NEU: Ereignisse für das Auswahlmenü laden
+  @Get('selection')
+  getSelection(@Req() req: any) {
+    return this.eventsService.findForSelection(
       req.supabase,
       req.user.id,
-      dto,
     );
   }
 
+  // Bestehende Funktion: Termine hinzufügen
   @Post(':id/occurrences')
   addOccurrence(
     @Req() req: any,
@@ -33,6 +45,7 @@ export class EventsController {
     );
   }
 
+  // Bestehende Funktion: Alle Ereignisse laden
   @Get()
   findAll(@Req() req: any) {
     return this.eventsService.findAll(
