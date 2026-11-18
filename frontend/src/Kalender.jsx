@@ -1,7 +1,9 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DAY_NAMES, toDateStr } from "./timelineUtils";
 import EventSelectionMenu from "./EventSelectionMenu";
+import StressShield from "./StressShield";
+import { getStressTolerance } from "./eventsApi";
 import "./Kalender.css";
 
 function Kalender() {
@@ -12,6 +14,24 @@ function Kalender() {
   const [view, setView] = useState("day");
   const [menuDate, setMenuDate] = useState(null);
   const [notice, setNotice] = useState("");
+
+  // Stresstoleranz des gewählten Tages (#200), kommt vom Backend (#220).
+  // Gemerkt wird, für welchen Tag die Antwort gilt: Passt sie nicht zum
+  // gewählten Tag (lädt noch) oder ist sie null (Fehler), zeigt die Anzeige „–“.
+  const [loaded, setLoaded] = useState({ date: null, result: null });
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let active = true; // verwirft veraltete Antworten bei schnellem Tageswechsel
+    getStressTolerance(selectedDate)
+      .then((result) => active && setLoaded({ date: selectedDate, result }))
+      .catch(() => active && setLoaded({ date: selectedDate, result: null }));
+    return () => {
+      active = false;
+    };
+  }, [selectedDate, reloadKey]);
+
+  const stressTolerance = loaded.date === selectedDate ? loaded.result : null;
 
   const hours = Array.from(
     { length: 24 },
@@ -89,6 +109,7 @@ function Kalender() {
   function handleEventSaved() {
     setNotice("Ereignis erfolgreich gespeichert.");
     setMenuDate(null);
+    setReloadKey((key) => key + 1); // neuer Termin → Stresstoleranz neu laden
   }
 
   return (
@@ -141,6 +162,11 @@ function Kalender() {
       {/* Tagesansicht */}
       {view === "day" ? (
         <div className="kalender-day-view">
+
+          <StressShield
+            value={stressTolerance?.value}
+            max={stressTolerance?.max ?? 100}
+          />
 
           <button
             type="button"
