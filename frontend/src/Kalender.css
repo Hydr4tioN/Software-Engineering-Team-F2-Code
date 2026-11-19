@@ -198,3 +198,112 @@
   border-radius: 8px;
   cursor: pointer;
 }
+
+
+/* Auswahlmenü unter dem Hinzufügen-Button */
+
+.kalender-event-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  margin: 18px 0;
+}
+
+.kalender-add-event-button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  background-color: #596b58;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kalender-add-event-button:hover {
+  background-color: #485a48;
+}
+
+/* Menü direkt unter dem Button anzeigen */
+
+.kalender-event-action .event-menu-container {
+  position: static;
+  width: 100%;
+  max-width: 430px;
+  margin: 0;
+}
+
+/* Menü in der Wochenansicht */
+
+.kalender-week-column {
+  position: relative;
+}
+
+.kalender-week-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  width: 350px;
+  max-width: 90vw;
+}
+
+
+/* Wochentage als Bezugspunkt für das Auswahlmenü */
+
+.kalender-week-column {
+  position: relative;
+}
+
+/* Auswahlmenü direkt unter dem Plus-Button */
+
+
+/* Wochenansicht: Auswahlmenü richtig positionieren */
+
+.kalender-week-column {
+  position: relative;
+}
+
+.kalender-week-menu {
+  position: absolute;
+  top: 100px;
+  left: 0;
+  z-index: 1000;
+
+  width: 380px;
+  max-width: min(380px, 90vw);
+}
+
+/* Bei den letzten Wochentagen nach links öffnen */
+.kalender-week-column:nth-last-child(-n+3)
+.kalender-week-menu {
+  left: auto;
+  right: 0;
+}
+
+/* Menü vollständig anzeigen */
+.kalender-week-menu .event-menu-container {
+  position: static;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Ausgewählten Wochentag nach vorne bringen */
+.kalender-week-column:has(.kalender-week-menu) {
+  z-index: 1001;
+}
+
+
+/* Erfolgsmeldung */
+
+.kalender-notice {
+  margin: 12px 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: #e8f3e8;
+  color: #285c35;
+}

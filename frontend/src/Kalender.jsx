@@ -5,20 +5,27 @@ import EventSelectionMenu from "./EventSelectionMenu";
 import "./Kalender.css";
 
 function Kalender() {
+  // Aktuelles Datum
   const [selectedDate, setSelectedDate] = useState(
     toDateStr(new Date())
   );
 
+  // Tagesansicht oder Wochenansicht
   const [view, setView] = useState("day");
+
+  // Datum, für das das Ereignismenü geöffnet ist
   const [menuDate, setMenuDate] = useState(null);
+
+  // Erfolgsmeldung
   const [notice, setNotice] = useState("");
 
+  // 24 Stunden
   const hours = Array.from(
     { length: 24 },
     (_, index) => index
   );
 
-  // Datum anzeigen
+  // Datum für die Anzeige
   const dateForDisplay = new Date(
     selectedDate + "T12:00:00"
   );
@@ -30,7 +37,7 @@ function Kalender() {
     year: "numeric",
   }).format(dateForDisplay);
 
-  // Wochenbeginn berechnen (Montag)
+  // Wochenbeginn: Montag
   const weekStart = new Date(dateForDisplay);
 
   weekStart.setDate(
@@ -39,10 +46,13 @@ function Kalender() {
       1
   );
 
+  // Alle Tage der aktuellen Woche
   const weekDays = DAY_NAMES.map((name, index) => {
     const date = new Date(weekStart);
 
-    date.setDate(weekStart.getDate() + index);
+    date.setDate(
+      weekStart.getDate() + index
+    );
 
     return {
       name,
@@ -50,7 +60,7 @@ function Kalender() {
     };
   });
 
-  // Kalenderwoche berechnen
+  // Kalenderwoche berechnen (ISO)
   const thursday = new Date(dateForDisplay);
 
   thursday.setDate(
@@ -69,32 +79,47 @@ function Kalender() {
     ((thursday - yearStart) / 86400000 + 1) / 7
   );
 
+  // Zeitraum der Woche
   const weekRange =
     weekDays[0].date.toLocaleDateString("de-DE") +
     " – " +
     weekDays[6].date.toLocaleDateString("de-DE");
 
-  // Ereignis-Auswahlmenü öffnen
-  function openEventMenu(date) {
+  // Ereignismenü öffnen oder schließen
+  function toggleEventMenu(date) {
     setNotice("");
-    setMenuDate(date);
+
+    setMenuDate((previousDate) =>
+      previousDate === date ? null : date
+    );
   }
 
-  // Ereignis-Auswahlmenü schließen
-  function closeEventMenu() {
-    setMenuDate(null);
-  }
-
-  // Nach dem Speichern
+  // Nach erfolgreichem Speichern
   function handleEventSaved() {
     setNotice("Ereignis erfolgreich gespeichert.");
     setMenuDate(null);
   }
 
+  // Datum wechseln
+  function handleDateChange(event) {
+    if (!event.target.value) return;
+
+    setSelectedDate(event.target.value);
+    setMenuDate(null);
+    setNotice("");
+  }
+
+  // Ansicht wechseln
+  function changeView(newView) {
+    setView(newView);
+    setMenuDate(null);
+    setNotice("");
+  }
+
   return (
     <div className="kalender-container">
 
-      {/* Kalender-Header */}
+      {/* Kalenderüberschrift */}
       <header className="kalender-header">
         <h1>
           {view === "day"
@@ -106,52 +131,92 @@ function Kalender() {
           type="date"
           lang="de-DE"
           value={selectedDate}
-          onChange={(event) =>
-            setSelectedDate(event.target.value)
-          }
+          onChange={handleDateChange}
         />
       </header>
 
-      {/* Datum / Kalenderwoche */}
+      {/* Datum oder Kalenderwoche */}
       <div className="kalender-date">
         {view === "day"
           ? germanDate
           : `KW ${weekNumber} · ${weekRange}`}
       </div>
 
-      {/* Wechsel zwischen Tages- und Wochenansicht */}
+      {/* Umschalten zwischen Tages- und Wochenansicht */}
       <div className="kalender-view-switch">
+
         <button
           type="button"
-          className={view === "day" ? "active" : ""}
-          onClick={() => setView("day")}
+          className={
+            view === "day" ? "active" : ""
+          }
+          onClick={() => changeView("day")}
         >
           Tagesansicht
         </button>
 
         <button
           type="button"
-          className={view === "week" ? "active" : ""}
-          onClick={() => setView("week")}
+          className={
+            view === "week" ? "active" : ""
+          }
+          onClick={() => changeView("week")}
         >
           Wochenansicht
         </button>
+
       </div>
 
-      {/* Tagesansicht */}
+      {/* Erfolgsmeldung */}
+      {notice && (
+        <p
+          className="kalender-notice"
+          role="status"
+        >
+          {notice}
+        </p>
+      )}
+
+      {/* ========================= */}
+      {/* TAGESANSICHT              */}
+      {/* ========================= */}
+
       {view === "day" ? (
+
         <div className="kalender-day-view">
 
-          <button
-            type="button"
-            onClick={() => openEventMenu(selectedDate)}
-          >
-            + Ereignis hinzufügen
-          </button>
+          {/* Ereignis hinzufügen */}
+          <div className="kalender-event-action">
 
+            <button
+              type="button"
+              className="kalender-add-event-button"
+              onClick={() =>
+                toggleEventMenu(selectedDate)
+              }
+              aria-expanded={
+                menuDate === selectedDate
+              }
+            >
+              + Ereignis hinzufügen
+            </button>
+
+            {/* Menü direkt unter dem Button */}
+            {menuDate === selectedDate && (
+              <EventSelectionMenu
+                date={selectedDate}
+                onClose={() =>
+                  setMenuDate(null)
+                }
+                onSaved={handleEventSaved}
+              />
+            )}
+
+          </div>
+
+          {/* Tageskalender mit Uhrzeiten */}
           <div className="kalender-grid">
 
-            {/* Uhrzeiten */}
             <div className="kalender-times">
               {hours.map((hour) => (
                 <div
@@ -167,7 +232,6 @@ function Kalender() {
               </div>
             </div>
 
-            {/* Tages-Zeitleiste */}
             <div className="kalender-timeline">
               {hours.map((hour) => (
                 <div
@@ -179,12 +243,16 @@ function Kalender() {
 
           </div>
         </div>
+
       ) : (
 
-        /* Wochenansicht */
+        /* ========================= */
+        /* WOCHENANSICHT             */
+        /* ========================= */
+
         <div className="kalender-week-grid">
 
-          {/* Uhrzeiten */}
+          {/* Uhrzeiten links */}
           <div className="kalender-week-times">
             {hours.map((hour) => (
               <div
@@ -196,62 +264,73 @@ function Kalender() {
             ))}
           </div>
 
-          {/* Wochentage */}
-          {weekDays.map((day) => (
-            <div
-              className="kalender-week-column"
-              key={toDateStr(day.date)}
-            >
+          {/* Einzelne Wochentage */}
+          {weekDays.map((day) => {
+            const dayDate = toDateStr(day.date);
 
-              {/* Überschrift des Wochentags */}
-              <div className="kalender-week-heading">
-                <strong>{day.name}</strong>
+            return (
+              <div
+                className="kalender-week-column"
+                key={dayDate}
+              >
 
-                <span>
-                  {day.date.toLocaleDateString("de-DE")}
-                </span>
+                {/* Überschrift des Wochentags */}
+                <div className="kalender-week-heading">
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    openEventMenu(toDateStr(day.date))
-                  }
-                  aria-label={`Ereignis am ${day.name} hinzufügen`}
-                >
-                  +
-                </button>
+                  <strong>{day.name}</strong>
+
+                  <span>
+                    {day.date.toLocaleDateString(
+                      "de-DE"
+                    )}
+                  </span>
+
+                  {/* Plus-Button */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      toggleEventMenu(dayDate)
+                    }
+                    aria-label={
+                      `Ereignis am ${day.name} hinzufügen`
+                    }
+                    aria-expanded={
+                      menuDate === dayDate
+                    }
+                  >
+                    +
+                  </button>
+
+                </div>
+
+                
+{menuDate === dayDate && (
+  <div className="kalender-week-menu">
+    <EventSelectionMenu
+      date={dayDate}
+      onClose={() => setMenuDate(null)}
+      onSaved={handleEventSaved}
+    />
+  </div>
+)}
+
+
+                {/* Zeitleiste des Wochentags */}
+                <div className="kalender-week-timeline">
+                  {hours.map((hour) => (
+                    <div
+                      className="kalender-hour-line"
+                      key={hour}
+                    />
+                  ))}
+                </div>
+
               </div>
-
-              {/* Zeitleiste pro Wochentag */}
-              <div className="kalender-week-timeline">
-                {hours.map((hour) => (
-                  <div
-                    className="kalender-hour-line"
-                    key={hour}
-                  />
-                ))}
-              </div>
-
-            </div>
-          ))}
+            );
+          })}
 
         </div>
-      )}
 
-      {/* Erfolgsmeldung */}
-      {notice && (
-        <p role="status" className="kalender-notice">
-          {notice}
-        </p>
-      )}
-
-      {/* Ereignis-Auswahlmenü */}
-      {menuDate && (
-        <EventSelectionMenu
-          date={menuDate}
-          onClose={closeEventMenu}
-          onSaved={handleEventSaved}
-        />
       )}
 
     </div>
