@@ -1,9 +1,16 @@
-
 import { useEffect, useState } from "react";
 import {
   addOccurrence,
   listEventsForSelection,
 } from "./eventsApi";
+
+const STRESS_LEVELS = [
+  { value: 1, label: "1 – Sehr niedrig", emoji: "😄" },
+  { value: 2, label: "2 – Leicht", emoji: "🙂" },
+  { value: 3, label: "3 – Moderat", emoji: "😐" },
+  { value: 4, label: "4 – Hoch", emoji: "🙁" },
+  { value: 5, label: "5 – Sehr hoch", emoji: "🫣" },
+];
 
 function EventSelectionMenu({ date, onClose, onSaved }) {
   const [normalEvents, setNormalEvents] = useState([]);
@@ -11,6 +18,7 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
   const [eventId, setEventId] = useState("");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
+  const [loadValue, setLoadValue] = useState(3);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -37,6 +45,16 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
     };
   }, []);
 
+  const allEvents = [...normalEvents, ...staticEvents];
+  const selectedEvent = allEvents.find((e) => String(e.id) === String(eventId));
+  const eventName = selectedEvent && selectedEvent.name ? selectedEvent.name.trim().toLowerCase() : "";
+
+  // Debug-Ausgabe in der Browser-F12-Konsole
+  console.log("Aktuelle Event-ID:", eventId, "| Gefundenes Event:", selectedEvent?.name, "| Clean Name:", eventName);
+
+  // Das Feld wird nur angezeigt, wenn nichts gewählt ist ODER der Name exakt "sport" bzw. "lernzeit" ist
+  const showLoadField = !eventId || eventName === "sport" || eventName === "lernzeit";
+
   async function handleSave(event) {
     event.preventDefault();
     setError("");
@@ -54,11 +72,14 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
     setSaving(true);
 
     try {
-      await addOccurrence(eventId, {
+      const payload = {
         eventDate: date,
         startTime,
         endTime,
-      });
+        ...(showLoadField ? { loadValue: Number(loadValue) } : {}),
+      };
+
+      await addOccurrence(eventId, payload);
 
       onSaved?.();
       onClose();
@@ -106,6 +127,25 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
               ))}
             </optgroup>
           </select>
+
+          {showLoadField && (
+            <>
+              <label htmlFor="event-load">
+                Belastung (1–5)
+              </label>
+              <select
+                id="event-load"
+                value={loadValue}
+                onChange={(e) => setLoadValue(Number(e.target.value))}
+              >
+                {STRESS_LEVELS.map((lvl) => (
+                  <option key={lvl.value} value={lvl.value}>
+                    {lvl.emoji} {lvl.label}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
 
           <label htmlFor="event-start">
             Startzeit

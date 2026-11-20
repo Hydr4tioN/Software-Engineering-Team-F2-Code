@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
 import { addOccurrence, listEvents } from "./eventsApi";
+
 import {
   findConflicts, fmtMin, toDateStr,
 } from "./timelineUtils";
 import "./Ereignisse.css";
 
+const STRESS_LEVELS = [
+  { value: 1, label: "1 – Sehr niedrig", emoji: "😄" },
+  { value: 2, label: "2 – Leicht", emoji: "🙂" },
+  { value: 3, label: "3 – Moderat", emoji: "😐" },
+  { value: 4, label: "4 – Hoch", emoji: "🙁" },
+  { value: 5, label: "5 – Sehr hoch", emoji: "🫣" },
+];
 
 function EventForm({ events, onSaved }) {
   const [eventId, setEventId] = useState("");
@@ -13,10 +21,16 @@ function EventForm({ events, onSaved }) {
   const [weekday, setWeekday] = useState(
     new Date().getDay() === 0 ? 7 : new Date().getDay()
   );
-  const [start, setStart] = useState("09:00");
-  const [end, setEnd] = useState("10:00");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [loadValue, setLoadValue] = useState(3); 
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Sicherer Name-Check für Sport & Lernzeit
+  const selectedEvent = events.find((e) => String(e.id) === String(eventId));
+  const eventName = selectedEvent && selectedEvent.name ? selectedEvent.name.trim().toLowerCase() : "";
+  const showLoadField = !eventId || eventName === "sport" || eventName === "lernzeit";
 
   const conflicts = start && end && start < end
     ? findConflicts(
@@ -55,9 +69,13 @@ function EventForm({ events, onSaved }) {
         ...(repeat ? { weekday } : { eventDate: date }),
         startTime: start,
         endTime: end,
+        ...(showLoadField ? { loadValue: Number(loadValue) } : {}),
       });
 
       setEventId("");
+      setLoadValue(3);
+      setStart("");
+      setEnd("");
       onSaved();
     } catch (e) {
       setError(e.message);
@@ -84,6 +102,24 @@ function EventForm({ events, onSaved }) {
           ))}
         </select>
       </label>
+
+      {/* Belastung wird nur angezeigt, wenn nichts gewählt ist ODER es Sport / Lernzeit ist */}
+      {showLoadField && (
+        <label>
+          Belastung (1–5)
+          <select
+            value={loadValue}
+            onChange={(e) => setLoadValue(Number(e.target.value))}
+          >
+            {STRESS_LEVELS.map((lvl) => (
+              <option key={lvl.value} value={lvl.value}>
+                {lvl.emoji} {lvl.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       <div className="ev-repeat">
         <span className="ev-repeat-label">
           Wöchentlich wiederholen?
@@ -148,7 +184,7 @@ function EventForm({ events, onSaved }) {
 
       {conflicts.length > 0 && (
         <p className="ev-warn" role="status">
-          ⚠ Überschneidet sich mit{" "}
+          Überschneidet sich mit{" "}
           {conflicts.map((c) =>
             `„${c.name}“ (${fmtMin(c.start)}–${fmtMin(c.end)})`
           ).join(", ")}.

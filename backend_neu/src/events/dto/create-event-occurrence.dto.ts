@@ -3,4 +3,5 @@ export class CreateEventOccurrenceDto {
   weekday?: number;
   startTime!: string;
   endTime!: string;
+  loadValue!: number;
 }
