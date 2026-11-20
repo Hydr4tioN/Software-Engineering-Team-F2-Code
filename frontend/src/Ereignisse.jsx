@@ -5,6 +5,13 @@ import {
 } from "./timelineUtils";
 import "./Ereignisse.css";
 
+const STRESS_LEVELS = [
+  { value: 1, label: "1 – Sehr niedrig", emoji: "😄" },
+  { value: 2, label: "2 – Leicht", emoji: "🙂" },
+  { value: 3, label: "3 – Moderat", emoji: "😐" },
+  { value: 4, label: "4 – Hoch", emoji: "🙁" },
+  { value: 5, label: "5 – Sehr hoch", emoji: "🫣" },
+];
 
 function EventForm({ events, onSaved }) {
   const [eventId, setEventId] = useState("");
@@ -15,6 +22,7 @@ function EventForm({ events, onSaved }) {
   );
   const [start, setStart] = useState("09:00");
   const [end, setEnd] = useState("10:00");
+  const [loadValue, setLoadValue] = useState(3); 
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -55,9 +63,11 @@ function EventForm({ events, onSaved }) {
         ...(repeat ? { weekday } : { eventDate: date }),
         startTime: start,
         endTime: end,
+        loadValue: Number(loadValue),
       });
 
       setEventId("");
+      setLoadValue(3);
       onSaved();
     } catch (e) {
       setError(e.message);
@@ -80,6 +90,19 @@ function EventForm({ events, onSaved }) {
           {events.map((e) => (
             <option key={e.id} value={e.id}>
               {e.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Belastung (1–5)
+        <select
+          value={loadValue}
+          onChange={(e) => setLoadValue(Number(e.target.value))}
+        >
+          {STRESS_LEVELS.map((lvl) => (
+            <option key={lvl.value} value={lvl.value}>
+              {lvl.emoji} {lvl.label}
             </option>
           ))}
         </select>

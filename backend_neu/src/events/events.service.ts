@@ -125,7 +125,6 @@ export class EventsService {
       );
     }
 
-    // Ereignis in der Datenbank speichern
     const { data, error } = await supabase
       .from('event_occurrences')
       .insert({
@@ -136,6 +135,7 @@ export class EventsService {
         start_time: dto.startTime,
         end_time: dto.endTime,
         repeat: hasWeekday,
+        load_value: dto.loadValue,
       })
       .select()
       .single();
