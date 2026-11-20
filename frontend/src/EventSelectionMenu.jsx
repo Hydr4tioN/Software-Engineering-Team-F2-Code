@@ -4,7 +4,6 @@ import {
   listEventsForSelection,
 } from "./eventsApi";
 
-
 const STRESS_LEVELS = [
   { value: 1, label: "1 – Sehr niedrig", emoji: "😄" },
   { value: 2, label: "2 – Leicht", emoji: "🙂" },
@@ -46,6 +45,16 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
     };
   }, []);
 
+  const allEvents = [...normalEvents, ...staticEvents];
+  const selectedEvent = allEvents.find((e) => String(e.id) === String(eventId));
+  const eventName = selectedEvent && selectedEvent.name ? selectedEvent.name.trim().toLowerCase() : "";
+
+  // Debug-Ausgabe in der Browser-F12-Konsole
+  console.log("Aktuelle Event-ID:", eventId, "| Gefundenes Event:", selectedEvent?.name, "| Clean Name:", eventName);
+
+  // Das Feld wird nur angezeigt, wenn nichts gewählt ist ODER der Name exakt "sport" bzw. "lernzeit" ist
+  const showLoadField = !eventId || eventName === "sport" || eventName === "lernzeit";
+
   async function handleSave(event) {
     event.preventDefault();
     setError("");
@@ -63,12 +72,14 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
     setSaving(true);
 
     try {
-      await addOccurrence(eventId, {
+      const payload = {
         eventDate: date,
         startTime,
         endTime,
-        loadValue: Number(loadValue),
-      });
+        ...(showLoadField ? { loadValue: Number(loadValue) } : {}),
+      };
+
+      await addOccurrence(eventId, payload);
 
       onSaved?.();
       onClose();
@@ -117,21 +128,24 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
             </optgroup>
           </select>
 
-          {/* 3. NEU: Das Auswahlfeld für die Belastung */}
-          <label htmlFor="event-load">
-            Belastung (1–5)
-          </label>
-          <select
-            id="event-load"
-            value={loadValue}
-            onChange={(e) => setLoadValue(Number(e.target.value))}
-          >
-            {STRESS_LEVELS.map((lvl) => (
-              <option key={lvl.value} value={lvl.value}>
-                {lvl.emoji} {lvl.label}
-              </option>
-            ))}
-          </select>
+          {showLoadField && (
+            <>
+              <label htmlFor="event-load">
+                Belastung (1–5)
+              </label>
+              <select
+                id="event-load"
+                value={loadValue}
+                onChange={(e) => setLoadValue(Number(e.target.value))}
+              >
+                {STRESS_LEVELS.map((lvl) => (
+                  <option key={lvl.value} value={lvl.value}>
+                    {lvl.emoji} {lvl.label}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
 
           <label htmlFor="event-start">
             Startzeit

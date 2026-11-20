@@ -2,7 +2,6 @@
 
 export const DAY_NAMES = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
 
-// Belastungsgrad-Tabelle: Symbol -> Startwert
 export const LEVELS = [
   { key: "entspannt", label: "Entspannt", symbol: "😊", value: 0, color: "#5e9c76" },
   { key: "leicht", label: "Leicht", symbol: "🙂", value: -10, color: "#8aa65a" },

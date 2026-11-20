@@ -27,6 +27,11 @@ function EventForm({ events, onSaved }) {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
 
+  // Sicherer Name-Check für Sport & Lernzeit
+  const selectedEvent = events.find((e) => String(e.id) === String(eventId));
+  const eventName = selectedEvent && selectedEvent.name ? selectedEvent.name.trim().toLowerCase() : "";
+  const showLoadField = !eventId || eventName === "sport" || eventName === "lernzeit";
+
   const conflicts = start && end && start < end
     ? findConflicts(
       repeat
@@ -64,14 +69,13 @@ function EventForm({ events, onSaved }) {
         ...(repeat ? { weekday } : { eventDate: date }),
         startTime: start,
         endTime: end,
-        loadValue: Number(loadValue),
+        ...(showLoadField ? { loadValue: Number(loadValue) } : {}),
       });
 
       setEventId("");
       setLoadValue(3);
-      setStart("09:00");
-      setEnd("10:00");
-      
+      setStart("");
+      setEnd("");
       onSaved();
     } catch (e) {
       setError(e.message);
@@ -98,19 +102,24 @@ function EventForm({ events, onSaved }) {
           ))}
         </select>
       </label>
-      <label>
-        Belastung (1–5)
-        <select
-          value={loadValue}
-          onChange={(e) => setLoadValue(Number(e.target.value))}
-        >
-          {STRESS_LEVELS.map((lvl) => (
-            <option key={lvl.value} value={lvl.value}>
-              {lvl.emoji} {lvl.label}
-            </option>
-          ))}
-        </select>
-      </label>
+
+      {/* Belastung wird nur angezeigt, wenn nichts gewählt ist ODER es Sport / Lernzeit ist */}
+      {showLoadField && (
+        <label>
+          Belastung (1–5)
+          <select
+            value={loadValue}
+            onChange={(e) => setLoadValue(Number(e.target.value))}
+          >
+            {STRESS_LEVELS.map((lvl) => (
+              <option key={lvl.value} value={lvl.value}>
+                {lvl.emoji} {lvl.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       <div className="ev-repeat">
         <span className="ev-repeat-label">
           Wöchentlich wiederholen?
