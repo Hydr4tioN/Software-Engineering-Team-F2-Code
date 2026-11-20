@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { addOccurrence, listEvents } from "./eventsApi";
+
 import {
   findConflicts, fmtMin, toDateStr,
 } from "./timelineUtils";
@@ -20,8 +21,8 @@ function EventForm({ events, onSaved }) {
   const [weekday, setWeekday] = useState(
     new Date().getDay() === 0 ? 7 : new Date().getDay()
   );
-  const [start, setStart] = useState("09:00");
-  const [end, setEnd] = useState("10:00");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
   const [loadValue, setLoadValue] = useState(3); 
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -68,6 +69,9 @@ function EventForm({ events, onSaved }) {
 
       setEventId("");
       setLoadValue(3);
+      setStart("09:00");
+      setEnd("10:00");
+      
       onSaved();
     } catch (e) {
       setError(e.message);
@@ -171,7 +175,7 @@ function EventForm({ events, onSaved }) {
 
       {conflicts.length > 0 && (
         <p className="ev-warn" role="status">
-          ⚠ Überschneidet sich mit{" "}
+          Überschneidet sich mit{" "}
           {conflicts.map((c) =>
             `„${c.name}“ (${fmtMin(c.start)}–${fmtMin(c.end)})`
           ).join(", ")}.

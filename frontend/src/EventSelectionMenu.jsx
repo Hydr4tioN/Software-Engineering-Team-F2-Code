@@ -1,9 +1,17 @@
-
 import { useEffect, useState } from "react";
 import {
   addOccurrence,
   listEventsForSelection,
 } from "./eventsApi";
+
+
+const STRESS_LEVELS = [
+  { value: 1, label: "1 – Sehr niedrig", emoji: "😄" },
+  { value: 2, label: "2 – Leicht", emoji: "🙂" },
+  { value: 3, label: "3 – Moderat", emoji: "😐" },
+  { value: 4, label: "4 – Hoch", emoji: "🙁" },
+  { value: 5, label: "5 – Sehr hoch", emoji: "🫣" },
+];
 
 function EventSelectionMenu({ date, onClose, onSaved }) {
   const [normalEvents, setNormalEvents] = useState([]);
@@ -11,6 +19,7 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
   const [eventId, setEventId] = useState("");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
+  const [loadValue, setLoadValue] = useState(3);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -58,6 +67,7 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
         eventDate: date,
         startTime,
         endTime,
+        loadValue: Number(loadValue),
       });
 
       onSaved?.();
@@ -105,6 +115,22 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
                 </option>
               ))}
             </optgroup>
+          </select>
+
+          {/* 3. NEU: Das Auswahlfeld für die Belastung */}
+          <label htmlFor="event-load">
+            Belastung (1–5)
+          </label>
+          <select
+            id="event-load"
+            value={loadValue}
+            onChange={(e) => setLoadValue(Number(e.target.value))}
+          >
+            {STRESS_LEVELS.map((lvl) => (
+              <option key={lvl.value} value={lvl.value}>
+                {lvl.emoji} {lvl.label}
+              </option>
+            ))}
           </select>
 
           <label htmlFor="event-start">
