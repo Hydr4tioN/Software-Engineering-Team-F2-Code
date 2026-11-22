@@ -17,14 +17,30 @@ export class SupabaseEventRepository implements EventRepository {
     return !!event;
   }
 
-  async getOccurrencesByUser(userId: string, supabase: any): Promise<any[]> {
+  async getOccurrencesByUser(userId: string, supabase: any): Promise<EventOccurrence[]> {
     const { data, error } = await supabase
       .from('event_occurrences')
-      .select('id, event_date, weekday, start_time, end_time, repeat')
+      .select('id, event_id, event_date, weekday, start_time, end_time, repeat')
       .eq('user_id', userId);
 
-    if (error) throw new InternalServerErrorException('Die Terminprüfung ist fehlgeschlagen.');
-    return data || [];
+    if (error) {
+      throw new InternalServerErrorException('Die Terminprüfung ist fehlgeschlagen.');
+    }
+    return (data || []).map((row: any) => this.toDomain(row, userId));
+  }
+
+  private toDomain(row: any, userId: string): EventOccurrence {
+    const startTime = row.start_time?.slice(0, 5);
+    const endTime = row.end_time?.slice(0, 5);
+
+    return new EventOccurrence(
+      row.event_id,
+      userId,
+      startTime,
+      endTime,
+      row.event_date ?? undefined,
+      row.weekday ?? undefined,
+    );
   }
 
   async saveOccurrence(occurrence: EventOccurrence, supabase: any): Promise<any> {
