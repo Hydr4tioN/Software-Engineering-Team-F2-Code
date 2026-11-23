@@ -2,7 +2,11 @@
  * Express ist das Backend-Framework.
  * Damit erstellen wir den HTTP-Server und definieren REST-Endpunkte.
  */
-const express = require('express')
+const express = require('express');
+require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
+const { average, hasPersistentHighStress } = require('./stats');
+
 /**
  * CORS erlaubt dem Frontend auf Port 573,
  * Anfragen an das Backend auf Port 3000 zu senden.
@@ -17,6 +21,8 @@ const app = express()
  * Port, auf dem das Backend lokal erreichbar ist.
  */
 const PORT = 3000
+// Verbindung zu Supabase aufbauen
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 /**
  * Aktiviert CORS für eingehende Anfragen.
  * Ohne CORS würde der Browser die Kommunikation zwischen Frontend und Backend blockieren.
