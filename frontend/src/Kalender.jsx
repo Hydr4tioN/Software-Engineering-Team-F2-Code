@@ -1,23 +1,65 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DAY_NAMES, toDateStr } from "./timelineUtils";
 import EventSelectionMenu from "./EventSelectionMenu";
+import StressShield from "./StressShield";
+import { getStressTolerance } from "./eventsApi";
 import "./Kalender.css";
 
+
 function Kalender() {
-  // Aktuelles Datum
+  // Ausgewähltes Datum
   const [selectedDate, setSelectedDate] = useState(
     toDateStr(new Date())
   );
 
-  // Tagesansicht oder Wochenansicht
+  // Tages- oder Wochenansicht
   const [view, setView] = useState("day");
 
-  // Datum, für das das Ereignismenü geöffnet ist
+  // Datum des geöffneten Ereignismenüs
   const [menuDate, setMenuDate] = useState(null);
 
   // Erfolgsmeldung
   const [notice, setNotice] = useState("");
+
+  // Stresstoleranz aus dem Backend (#200 / #220)
+  const [loaded, setLoaded] = useState({
+    date: null,
+    result: null,
+  });
+
+  const [reloadKey, setReloadKey] = useState(0);
+
+  // Stresstoleranz beim Datumswechsel laden
+  useEffect(() => {
+    let active = true;
+
+    getStressTolerance(selectedDate)
+      .then((result) => {
+        if (active) {
+          setLoaded({
+            date: selectedDate,
+            result,
+          });
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setLoaded({
+            date: selectedDate,
+            result: null,
+          });
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedDate, reloadKey]);
+
+  const stressTolerance =
+    loaded.date === selectedDate
+      ? loaded.result
+      : null;
 
   // 24 Stunden
   const hours = Array.from(
@@ -30,12 +72,15 @@ function Kalender() {
     selectedDate + "T12:00:00"
   );
 
-  const germanDate = new Intl.DateTimeFormat("de-DE", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(dateForDisplay);
+  const germanDate = new Intl.DateTimeFormat(
+    "de-DE",
+    {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }
+  ).format(dateForDisplay);
 
   // Wochenbeginn: Montag
   const weekStart = new Date(dateForDisplay);
@@ -46,7 +91,7 @@ function Kalender() {
       1
   );
 
-  // Alle Tage der aktuellen Woche
+  // Wochentage berechnen
   const weekDays = DAY_NAMES.map((name, index) => {
     const date = new Date(weekStart);
 
@@ -60,7 +105,7 @@ function Kalender() {
     };
   });
 
-  // Kalenderwoche berechnen (ISO)
+  // Kalenderwoche berechnen
   const thursday = new Date(dateForDisplay);
 
   thursday.setDate(
@@ -79,7 +124,7 @@ function Kalender() {
     ((thursday - yearStart) / 86400000 + 1) / 7
   );
 
-  // Zeitraum der Woche
+  // Wochenzeitraum
   const weekRange =
     weekDays[0].date.toLocaleDateString("de-DE") +
     " – " +
@@ -98,9 +143,12 @@ function Kalender() {
   function handleEventSaved() {
     setNotice("Ereignis erfolgreich gespeichert.");
     setMenuDate(null);
+
+    // Stresstoleranz nach Speicherung aktualisieren
+    setReloadKey((key) => key + 1);
   }
 
-  // Datum wechseln
+  // Datum ändern
   function handleDateChange(event) {
     if (!event.target.value) return;
 
@@ -135,21 +183,19 @@ function Kalender() {
         />
       </header>
 
-      {/* Datum oder Kalenderwoche */}
+      {/* Datum und Kalenderwoche */}
       <div className="kalender-date">
         {view === "day"
           ? germanDate
           : `KW ${weekNumber} · ${weekRange}`}
       </div>
 
-      {/* Umschalten zwischen Tages- und Wochenansicht */}
+      {/* Umschalten der Kalenderansicht */}
       <div className="kalender-view-switch">
 
         <button
           type="button"
-          className={
-            view === "day" ? "active" : ""
-          }
+          className={view === "day" ? "active" : ""}
           onClick={() => changeView("day")}
         >
           Tagesansicht
@@ -157,9 +203,7 @@ function Kalender() {
 
         <button
           type="button"
-          className={
-            view === "week" ? "active" : ""
-          }
+          className={view === "week" ? "active" : ""}
           onClick={() => changeView("week")}
         >
           Wochenansicht
@@ -177,13 +221,16 @@ function Kalender() {
         </p>
       )}
 
-      {/* ========================= */}
-      {/* TAGESANSICHT              */}
-      {/* ========================= */}
-
+      {/* TAGESANSICHT */}
       {view === "day" ? (
 
         <div className="kalender-day-view">
+
+          {/* Stresstoleranz aus main */}
+          <StressShield
+            value={stressTolerance?.value}
+            max={stressTolerance?.max ?? 100}
+          />
 
           {/* Ereignis hinzufügen */}
           <div className="kalender-event-action">
@@ -214,7 +261,7 @@ function Kalender() {
 
           </div>
 
-          {/* Tageskalender mit Uhrzeiten */}
+          {/* Tageskalender */}
           <div className="kalender-grid">
 
             <div className="kalender-times">
@@ -242,17 +289,15 @@ function Kalender() {
             </div>
 
           </div>
+
         </div>
 
       ) : (
 
-        /* ========================= */
-        /* WOCHENANSICHT             */
-        /* ========================= */
-
+        /* WOCHENANSICHT */
         <div className="kalender-week-grid">
 
-          {/* Uhrzeiten links */}
+          {/* Uhrzeiten */}
           <div className="kalender-week-times">
             {hours.map((hour) => (
               <div
@@ -264,7 +309,7 @@ function Kalender() {
             ))}
           </div>
 
-          {/* Einzelne Wochentage */}
+          {/* Wochentage */}
           {weekDays.map((day) => {
             const dayDate = toDateStr(day.date);
 
@@ -274,7 +319,6 @@ function Kalender() {
                 key={dayDate}
               >
 
-                {/* Überschrift des Wochentags */}
                 <div className="kalender-week-heading">
 
                   <strong>{day.name}</strong>
@@ -303,19 +347,20 @@ function Kalender() {
 
                 </div>
 
-                
-{menuDate === dayDate && (
-  <div className="kalender-week-menu">
-    <EventSelectionMenu
-      date={dayDate}
-      onClose={() => setMenuDate(null)}
-      onSaved={handleEventSaved}
-    />
-  </div>
-)}
+                {/* Menü beim jeweiligen Wochentag */}
+                {menuDate === dayDate && (
+                  <div className="kalender-week-menu">
+                    <EventSelectionMenu
+                      date={dayDate}
+                      onClose={() =>
+                        setMenuDate(null)
+                      }
+                      onSaved={handleEventSaved}
+                    />
+                  </div>
+                )}
 
-
-                {/* Zeitleiste des Wochentags */}
+                {/* Zeitleiste */}
                 <div className="kalender-week-timeline">
                   {hours.map((hour) => (
                     <div
