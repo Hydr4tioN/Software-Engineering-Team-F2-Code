@@ -29,11 +29,6 @@ export const addOccurrence = (eventId, occurrence) =>
 export const listEventsForSelection = () =>
   request("/events/selection");
 
-
-/**
- * Stresstoleranz eines Tages vom Backend laden.
- */
+// Stresstoleranz eines Tages vom Backend laden.
 export const getStressTolerance = (date) =>
-  request(
-    `/stress-tolerance?date=${encodeURIComponent(date)}`
-  );
+  request(`/stress-tolerance?date=${encodeURIComponent(date)}`);

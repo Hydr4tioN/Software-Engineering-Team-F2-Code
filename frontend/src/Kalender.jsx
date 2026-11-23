@@ -1,10 +1,10 @@
+
 import { useEffect, useState } from "react";
 import { DAY_NAMES, toDateStr } from "./timelineUtils";
 import EventSelectionMenu from "./EventSelectionMenu";
 import StressShield from "./StressShield";
 import { getStressTolerance } from "./eventsApi";
 import "./Kalender.css";
-
 
 function Kalender() {
   // Ausgewähltes Datum
@@ -60,6 +60,20 @@ function Kalender() {
     loaded.date === selectedDate
       ? loaded.result
       : null;
+
+  // Datum ändern
+  function handleDateChange(event) {
+    setSelectedDate(event.target.value);
+    setMenuDate(null);
+    setNotice("");
+  }
+
+  // Tages- oder Wochenansicht wechseln
+  function changeView(newView) {
+    setView(newView);
+    setMenuDate(null);
+    setNotice("");
+  }
 
   // 24 Stunden
   const hours = Array.from(
@@ -144,24 +158,8 @@ function Kalender() {
     setNotice("Ereignis erfolgreich gespeichert.");
     setMenuDate(null);
 
-    // Stresstoleranz nach Speicherung aktualisieren
-    setReloadKey((key) => key + 1);
-  }
-
-  // Datum ändern
-  function handleDateChange(event) {
-    if (!event.target.value) return;
-
-    setSelectedDate(event.target.value);
-    setMenuDate(null);
-    setNotice("");
-  }
-
-  // Ansicht wechseln
-  function changeView(newView) {
-    setView(newView);
-    setMenuDate(null);
-    setNotice("");
+    // Stresstoleranz erneut vom Backend laden
+    setReloadKey((previousKey) => previousKey + 1);
   }
 
   return (
@@ -226,40 +224,36 @@ function Kalender() {
 
         <div className="kalender-day-view">
 
-          {/* Stresstoleranz aus main */}
+          {/* Stresstoleranz-Anzeige */}
           <StressShield
             value={stressTolerance?.value}
             max={stressTolerance?.max ?? 100}
           />
 
           {/* Ereignis hinzufügen */}
-          <div className="kalender-event-action">
+          <button
+            type="button"
+            className="kalender-add-event-button"
+            onClick={() =>
+              toggleEventMenu(selectedDate)
+            }
+            aria-expanded={
+              menuDate === selectedDate
+            }
+          >
+            + Ereignis hinzufügen
+          </button>
 
-            <button
-              type="button"
-              className="kalender-add-event-button"
-              onClick={() =>
-                toggleEventMenu(selectedDate)
+          {/* Ereignis-Auswahlmenü */}
+          {menuDate === selectedDate && (
+            <EventSelectionMenu
+              date={selectedDate}
+              onClose={() =>
+                setMenuDate(null)
               }
-              aria-expanded={
-                menuDate === selectedDate
-              }
-            >
-              + Ereignis hinzufügen
-            </button>
-
-            {/* Menü direkt unter dem Button */}
-            {menuDate === selectedDate && (
-              <EventSelectionMenu
-                date={selectedDate}
-                onClose={() =>
-                  setMenuDate(null)
-                }
-                onSaved={handleEventSaved}
-              />
-            )}
-
-          </div>
+              onSaved={handleEventSaved}
+            />
+          )}
 
           {/* Tageskalender */}
           <div className="kalender-grid">
