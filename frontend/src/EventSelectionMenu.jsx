@@ -1,19 +1,32 @@
-
 import { useEffect, useState } from "react";
 import {
   addOccurrence,
+  listEvents,
   listEventsForSelection,
 } from "./eventsApi";
-
+import { findConflicts, fmtMin, isoWeekday } from "./timelineUtils";
 import "./EventSelectionMenu.css";
+import "./Ereignisse.css";
+
+
+const STRESS_LEVELS = [
+  { value: 1, label: "1 – Sehr niedrig", emoji: "😄" },
+  { value: 2, label: "2 – Leicht", emoji: "🙂" },
+  { value: 3, label: "3 – Moderat", emoji: "😐" },
+  { value: 4, label: "4 – Hoch", emoji: "🙁" },
+  { value: 5, label: "5 – Sehr hoch", emoji: "🫣" },
+];
+
 
 function EventSelectionMenu({ date, onClose, onSaved }) {
   const [normalEvents, setNormalEvents] = useState([]);
   const [staticEvents, setStaticEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  
 
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("10:00");
+  const [loadValue, setLoadValue] = useState(3);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,9 +65,14 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
     };
   }, []);
 
-  // Ereignis auswählen
+  // Belastung (1–5) gibt es nur für Sport und Lernzeit
+  const eventName = selectedEvent?.name?.trim().toLowerCase() ?? "";
+  const showLoadField = eventName === "sport" || eventName === "lernzeit";
+
+  // Ereignis auswählen, gespeicherte Belastung des Nutzers vorbelegen
   function selectEvent(event, type) {
     setSelectedEvent({ ...event, type });
+    setLoadValue(event.load_value ?? 3);
     setError("");
   }
 
@@ -78,6 +96,7 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
         eventDate: date,
         startTime,
         endTime,
+        ...(showLoadField ? { loadValue: Number(loadValue) } : {}),
       });
 
       onSaved?.();
@@ -108,9 +127,7 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
         <button
           type="button"
           key={event.id}
-          className={`event-menu-row ${
-            selected ? "selected" : ""
-          }`}
+          className={`event-menu-row ${selected ? "selected" : ""}`}
           onClick={() => selectEvent(event, type)}
           aria-pressed={selected}
         >
@@ -186,15 +203,29 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
               Ausgewählt: <strong>{selectedEvent.name}</strong>
             </p>
 
+            {showLoadField && (
+              <label>
+                Belastung (1–5)
+                <select
+                  value={loadValue}
+                  onChange={(e) => setLoadValue(Number(e.target.value))}
+                >
+                  {STRESS_LEVELS.map((lvl) => (
+                    <option key={lvl.value} value={lvl.value}>
+                      {lvl.emoji} {lvl.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
             <div className="event-menu-times">
               <label>
                 Startzeit
                 <input
                   type="time"
                   value={startTime}
-                  onChange={(e) =>
-                    setStartTime(e.target.value)
-                  }
+                  onChange={(e) => setStartTime(e.target.value)}
                 />
               </label>
 
@@ -203,9 +234,7 @@ function EventSelectionMenu({ date, onClose, onSaved }) {
                 <input
                   type="time"
                   value={endTime}
-                  onChange={(e) =>
-                    setEndTime(e.target.value)
-                  }
+                  onChange={(e) => setEndTime(e.target.value)}
                 />
               </label>
             </div>

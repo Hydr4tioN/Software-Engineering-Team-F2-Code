@@ -8,6 +8,7 @@ export class EventOccurrence {
     public readonly endTime: string,
     public readonly eventDate?: string | null,
     public readonly weekday?: number | null,
+    public readonly loadValue?: number | null,
   ) {
     this.isRepeat = this.weekday !== undefined && this.weekday !== null;
     this.validate();

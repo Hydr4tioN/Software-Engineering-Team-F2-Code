@@ -1,33 +1,26 @@
-
 import { useEffect, useState } from "react";
 import { DAY_NAMES, toDateStr } from "./timelineUtils";
-import EventSelectionMenu from "./EventSelectionMenu";
 import StressShield from "./StressShield";
 import { getStressTolerance } from "./eventsApi";
 import "./Kalender.css";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 function Kalender() {
-  // Ausgewähltes Datum
+  const navigate = useNavigate();
+
+
   const [selectedDate, setSelectedDate] = useState(
     toDateStr(new Date())
   );
 
-  // Tages- oder Wochenansicht
+
   const [view, setView] = useState("day");
 
-  // Datum des geöffneten Ereignismenüs
-  const [menuDate, setMenuDate] = useState(null);
 
-  // Erfolgsmeldung
-  const [notice, setNotice] = useState("");
-
-  // Stresstoleranz aus dem Backend (#200 / #220)
   const [loaded, setLoaded] = useState({
     date: null,
     result: null,
   });
-
-  const [reloadKey, setReloadKey] = useState(0);
 
   // Stresstoleranz beim Datumswechsel laden
   useEffect(() => {
@@ -54,7 +47,7 @@ function Kalender() {
     return () => {
       active = false;
     };
-  }, [selectedDate, reloadKey]);
+  }, [selectedDate]);
 
   const stressTolerance =
     loaded.date === selectedDate
@@ -64,15 +57,11 @@ function Kalender() {
   // Datum ändern
   function handleDateChange(event) {
     setSelectedDate(event.target.value);
-    setMenuDate(null);
-    setNotice("");
   }
 
   // Tages- oder Wochenansicht wechseln
   function changeView(newView) {
     setView(newView);
-    setMenuDate(null);
-    setNotice("");
   }
 
   // 24 Stunden
@@ -144,22 +133,9 @@ function Kalender() {
     " – " +
     weekDays[6].date.toLocaleDateString("de-DE");
 
-  // Ereignismenü öffnen oder schließen
+  // Zur Ereignisse-Seite mit vorgewähltem Datum
   function toggleEventMenu(date) {
-    setNotice("");
-
-    setMenuDate((previousDate) =>
-      previousDate === date ? null : date
-    );
-  }
-
-  // Nach erfolgreichem Speichern
-  function handleEventSaved() {
-    setNotice("Ereignis erfolgreich gespeichert.");
-    setMenuDate(null);
-
-    // Stresstoleranz erneut vom Backend laden
-    setReloadKey((previousKey) => previousKey + 1);
+    navigate(`/ereignisse?date=${date}`);
   }
 
   return (
@@ -209,16 +185,6 @@ function Kalender() {
 
       </div>
 
-      {/* Erfolgsmeldung */}
-      {notice && (
-        <p
-          className="kalender-notice"
-          role="status"
-        >
-          {notice}
-        </p>
-      )}
-
       {/* TAGESANSICHT */}
       {view === "day" ? (
 
@@ -237,23 +203,9 @@ function Kalender() {
             onClick={() =>
               toggleEventMenu(selectedDate)
             }
-            aria-expanded={
-              menuDate === selectedDate
-            }
           >
             + Ereignis hinzufügen
           </button>
-
-          {/* Ereignis-Auswahlmenü */}
-          {menuDate === selectedDate && (
-            <EventSelectionMenu
-              date={selectedDate}
-              onClose={() =>
-                setMenuDate(null)
-              }
-              onSaved={handleEventSaved}
-            />
-          )}
 
           {/* Tageskalender */}
           <div className="kalender-grid">
@@ -332,27 +284,11 @@ function Kalender() {
                     aria-label={
                       `Ereignis am ${day.name} hinzufügen`
                     }
-                    aria-expanded={
-                      menuDate === dayDate
-                    }
                   >
                     +
                   </button>
 
                 </div>
-
-                {/* Menü beim jeweiligen Wochentag */}
-                {menuDate === dayDate && (
-                  <div className="kalender-week-menu">
-                    <EventSelectionMenu
-                      date={dayDate}
-                      onClose={() =>
-                        setMenuDate(null)
-                      }
-                      onSaved={handleEventSaved}
-                    />
-                  </div>
-                )}
 
                 {/* Zeitleiste */}
                 <div className="kalender-week-timeline">

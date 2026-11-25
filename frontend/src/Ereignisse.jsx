@@ -1,22 +1,59 @@
 import { useEffect, useState } from "react";
 import { addOccurrence, listEvents } from "./eventsApi";
+import { useNavigate, useSearchParams } from "react-router-dom";
+
 import {
-  findConflicts, fmtMin, toDateStr,
+  findConflicts, fmtMin, isoWeekday, toDateStr,
 } from "./timelineUtils";
 import "./Ereignisse.css";
 
+const STRESS_LEVELS = [
+  { value: 1, label: "1 – Sehr niedrig", emoji: "😄" },
+  { value: 2, label: "2 – Leicht", emoji: "🙂" },
+  { value: 3, label: "3 – Moderat", emoji: "😐" },
+  { value: 4, label: "4 – Hoch", emoji: "🙁" },
+  { value: 5, label: "5 – Sehr hoch", emoji: "🫣" },
+];
 
-function EventForm({ events, onSaved }) {
+const EVENT_ICONS = {
+  lehrveranstaltung: "🎓",
+  nebenjob: "💼",
+  sport: "🏃",
+  lernzeit: "📚",
+};
+
+const EVENT_SUBLABELS = {
+  lehrveranstaltung: "statisches Ereignis",
+  nebenjob: "statisches Ereignis",
+  sport: "normales Ereignis",
+  lernzeit: "normales Ereignis",
+};
+
+const iconFor = (event) =>
+  EVENT_ICONS[event.name?.trim().toLowerCase()] ??
+  (event.type === "statisch" ? "📌" : "📅");
+
+const sublabelFor = (event) => {
+  if (!event) return "";
+  const key = event.name?.trim().toLowerCase();
+  if (key && EVENT_SUBLABELS[key]) return EVENT_SUBLABELS[key];
+  return event.type === "statisch" ? "statisch" : "normales Ereignis";
+};
+
+function EventForm({ events, onSaved, initialDate }) {
   const [eventId, setEventId] = useState("");
-  const [date, setDate] = useState(toDateStr(new Date()));
+  const [date, setDate] = useState(initialDate);
   const [repeat, setRepeat] = useState(false);
-  const [weekday, setWeekday] = useState(
-    new Date().getDay() === 0 ? 7 : new Date().getDay()
-  );
-  const [start, setStart] = useState("09:00");
-  const [end, setEnd] = useState("10:00");
+  const [weekday, setWeekday] = useState(isoWeekday(initialDate));
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [loadValue, setLoadValue] = useState(3);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const selectedEvent = events.find((e) => String(e.id) === String(eventId));
+  const eventName = selectedEvent && selectedEvent.name ? selectedEvent.name.trim().toLowerCase() : "";
+  const showLoadField = !eventId || eventName === "sport" || eventName === "lernzeit";
 
   const conflicts = start && end && start < end
     ? findConflicts(
@@ -55,9 +92,13 @@ function EventForm({ events, onSaved }) {
         ...(repeat ? { weekday } : { eventDate: date }),
         startTime: start,
         endTime: end,
+        ...(showLoadField ? { loadValue: Number(loadValue) } : {}),
       });
 
       setEventId("");
+      setLoadValue(3);
+      setStart("");
+      setEnd("");
       onSaved();
     } catch (e) {
       setError(e.message);
@@ -74,16 +115,42 @@ function EventForm({ events, onSaved }) {
         Ereignis
         <select
           value={eventId}
-          onChange={(e) => setEventId(e.target.value)}
+          onChange={(e) => {
+            setEventId(e.target.value);
+            const ev = events.find((x) => String(x.id) === e.target.value);
+            setLoadValue(ev?.load_value ?? 3);
+          }}
         >
           <option value="">Bitte auswählen</option>
           {events.map((e) => (
             <option key={e.id} value={e.id}>
-              {e.name}
+              {iconFor(e)} {e.name}
             </option>
           ))}
         </select>
+        {selectedEvent && (
+          <small style={{ display: "block", marginTop: "6px" }}>
+            {sublabelFor(selectedEvent)}
+          </small>
+        )}
       </label>
+
+      {showLoadField && (
+        <label>
+          Belastung (1–5)
+          <select
+            value={loadValue}
+            onChange={(e) => setLoadValue(Number(e.target.value))}
+          >
+            {STRESS_LEVELS.map((lvl) => (
+              <option key={lvl.value} value={lvl.value}>
+                {lvl.emoji} {lvl.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       <div className="ev-repeat">
         <span className="ev-repeat-label">
           Wöchentlich wiederholen?
@@ -148,7 +215,7 @@ function EventForm({ events, onSaved }) {
 
       {conflicts.length > 0 && (
         <p className="ev-warn" role="status">
-          ⚠ Überschneidet sich mit{" "}
+          Überschneidet sich mit{" "}
           {conflicts.map((c) =>
             `„${c.name}“ (${fmtMin(c.start)}–${fmtMin(c.end)})`
           ).join(", ")}.
@@ -168,11 +235,17 @@ function EventForm({ events, onSaved }) {
   );
 }
 
-
 function Ereignisse() {
   const [events, setEvents] = useState([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const dateParam = searchParams.get("date");
+  const initialDate = /^\d{4}-\d{2}-\d{2}$/.test(dateParam ?? "")
+    ? dateParam
+    : toDateStr(new Date());
 
   useEffect(() => {
     let active = true;
@@ -182,13 +255,8 @@ function Ereignisse() {
     return () => { active = false; };
   }, []);
 
-  async function handleSaved() {
-    try {
-      setEvents(await listEvents());
-      setNotice("Ereignis gespeichert.");
-    } catch (e) {
-      setError(e.message);
-    }
+  function handleSaved(savedDate) {
+    navigate(savedDate ? `/kalender?date=${savedDate}` : "/kalender");
   }
 
   return (
@@ -196,7 +264,11 @@ function Ereignisse() {
       <h1>Ereignisse</h1>
       {error && <p className="error">{error}</p>}
 
-      <EventForm events={events} onSaved={handleSaved} />
+      <EventForm
+        events={events}
+        onSaved={handleSaved}
+        initialDate={initialDate}
+      />
       {notice && <p className="success-message">{notice}</p>}
     </div>
   );

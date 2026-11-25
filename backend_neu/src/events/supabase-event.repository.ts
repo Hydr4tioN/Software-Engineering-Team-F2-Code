@@ -20,7 +20,7 @@ export class SupabaseEventRepository implements EventRepository {
   async getOccurrencesByUser(userId: string, supabase: any): Promise<any[]> {
     const { data, error } = await supabase
       .from('event_occurrences')
-      .select('id, event_date, weekday, start_time, end_time, repeat')
+      .select('id, event_date, weekday, start_time, end_time, repeat, load_value')
       .eq('user_id', userId);
 
     if (error) throw new InternalServerErrorException('Die Terminprüfung ist fehlgeschlagen.');
@@ -38,6 +38,7 @@ export class SupabaseEventRepository implements EventRepository {
         start_time: occurrence.startTime,
         end_time: occurrence.endTime,
         repeat: occurrence.isRepeat,
+        load_value: occurrence.loadValue,
       })
       .select()
       .single();

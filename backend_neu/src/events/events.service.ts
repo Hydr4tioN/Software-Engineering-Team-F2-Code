@@ -37,7 +37,6 @@ export class EventsService {
       );
     }
 
-    // Domain-Logik: Ereignistermin erstellen und validieren
     let newOccurrence: EventOccurrence;
 
     try {
@@ -48,6 +47,7 @@ export class EventsService {
         dto.endTime,
         dto.eventDate,
         dto.weekday,
+        dto.loadValue
       );
     } catch (error: any) {
       throw new BadRequestException(
