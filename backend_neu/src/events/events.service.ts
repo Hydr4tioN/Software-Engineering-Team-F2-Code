@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-
+import { DomainError } from './errors/domain.error';
 import { EventRepository } from './event.repository';
 import { CreateEventOccurrenceDto } from './dto/create-event-occurrence.dto';
 import { EventOccurrence } from './entities/event.entity';
@@ -42,17 +42,18 @@ export class EventsService {
 
     try {
       newOccurrence = new EventOccurrence(
-        eventId,
-        userId,
-        dto.startTime,
-        dto.endTime,
-        dto.eventDate,
-        dto.weekday,
+        eventId, 
+        userId, 
+        dto.startTime, 
+        dto.endTime, 
+        dto.eventDate, 
+        dto.weekday
       );
-    } catch (error: any) {
-      throw new BadRequestException(
-        error.message.replace('DOMAIN_ERROR: ', ''),
-      );
+    } catch (error) {
+      if (error instanceof DomainError) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
 
     // Bereits vorhandene Ereignistermine laden
@@ -135,4 +136,5 @@ export class EventsService {
       supabase,
     );
   }
+  
 }
