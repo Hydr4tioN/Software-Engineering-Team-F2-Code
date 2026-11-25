@@ -12,7 +12,8 @@ export class ScheduleClashPolicy {
       return (newOcc.startTime < existing.endTime ) && (existing.startTime < newOcc.endTime);
     });
   }
-
+  
+   
   private static isSameDay(a: EventOccurrence, b: EventOccurrence): boolean {
     if (!a.isRepeat && !b.isRepeat) {
       return a.eventDate === b.eventDate;
@@ -20,11 +21,8 @@ export class ScheduleClashPolicy {
     if (a.isRepeat && b.isRepeat) {
       return a.weekday === b.weekday;
     }
-    const singleDate = a.isRepeat ? b.eventDate! : a.eventDate!;
+    const single = a.isRepeat ? b : a;
     const recurringWeekday = a.isRepeat ? a.weekday : b.weekday;
-    const jsDay = new Date(singleDate).getDay();
-    const isoWeekday = jsDay === 0 ? 7 : jsDay;
-
-    return isoWeekday === recurringWeekday;
+    return single.getTargetWeekday() === recurringWeekday;
   }
 }

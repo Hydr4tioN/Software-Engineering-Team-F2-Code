@@ -26,21 +26,30 @@ export class SupabaseEventRepository implements EventRepository {
     if (error) {
       throw new InternalServerErrorException('Die Terminprüfung ist fehlgeschlagen.');
     }
-    return (data || []).map((row: any) => this.toDomain(row, userId));
+
+    return (data || [])
+      .map((row: any) => this.toDomain(row, userId))
+      .filter((occ: EventOccurrence | null): occ is EventOccurrence => occ !== null);
   }
 
-  private toDomain(row: any, userId: string): EventOccurrence {
-    const startTime = row.start_time?.slice(0, 5);
-    const endTime = row.end_time?.slice(0, 5);
+  
+  private toDomain(row: any, userId: string): EventOccurrence | null {
+    try {
+      const startTime = row.start_time?.slice(0, 5);
+      const endTime = row.end_time?.slice(0, 5);
 
-    return new EventOccurrence(
-      row.event_id,
-      userId,
-      startTime,
-      endTime,
-      row.event_date ?? undefined,
-      row.weekday ?? undefined,
-    );
+      return new EventOccurrence(
+        row.event_id,
+        userId,
+        startTime,
+        endTime,
+        row.event_date ?? undefined,
+        row.weekday ?? undefined,
+      );
+    } catch (error) {
+      console.warn(`Ungültige Termindaten in DB übersprungen (id: ${row?.id}):`, error);
+      return null;
+    }
   }
 
   async saveOccurrence(occurrence: EventOccurrence, supabase: any): Promise<any> {
