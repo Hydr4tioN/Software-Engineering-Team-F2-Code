@@ -37,7 +37,6 @@ export class EventsService {
       );
     }
 
-    // Domain-Logik: Ereignistermin erstellen und validieren
     let newOccurrence: EventOccurrence;
 
     try {
@@ -48,6 +47,7 @@ export class EventsService {
         dto.endTime,
         dto.eventDate,
         dto.weekday,
+        dto.loadValue
       );
     } catch (error: any) {
       throw new BadRequestException(
@@ -74,51 +74,10 @@ export class EventsService {
       );
     }
 
-<<<<<<< HEAD
-    const { data, error } = await supabase
-      .from('event_occurrences')
-      .insert({
-        event_id: eventId,
-        user_id: userId,
-        event_date: hasDate ? dto.eventDate : null,
-        weekday: hasWeekday ? dto.weekday : null,
-        start_time: dto.startTime,
-        end_time: dto.endTime,
-        repeat: hasWeekday,
-        load_value: dto.loadValue,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      throw new InternalServerErrorException(
-        'Der Ereignistermin konnte nicht erstellt werden.',
-      );
-    }
-
-    return data;
-  }
-  
-async findForSelection(
-  supabase: any,
-  userId: string,
-) {
-  // Ereignisse des angemeldeten Benutzers laden
-  const { data, error } = await supabase
-    .from('events')
-    .select('id, name, is_static')
-    .eq('user_id', userId)
-    .order('name', { ascending: true });
-
-  if (error) {
-    throw new InternalServerErrorException(
-      'Die Ereignisse konnten nicht geladen werden.',
-=======
     // Ereignistermin speichern
     return await this.eventRepo.saveOccurrence(
       newOccurrence,
       supabase,
->>>>>>> origin/main
     );
   }
 
