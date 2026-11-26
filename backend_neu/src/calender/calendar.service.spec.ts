@@ -16,17 +16,13 @@ describe('CalendarService', () => {
           eq: async () => ({
             data: [
               {
-                id: '1',
-                name: 'Lernzeit',
-                event_occurrences: [
-                  {
-                    id: '10',
-                    event_date: '2026-11-16',
-                    weekday: null,
-                    start_time: '10:00',
-                    end_time: '11:00',
-                  },
-                ],
+                id: '10',
+                event_id: '1',
+                event_date: '2026-11-16',
+                weekday: null,
+                start_time: '10:00',
+                end_time: '11:00',
+                events: { name: 'Lernzeit' },
               },
             ],
             error: null,
