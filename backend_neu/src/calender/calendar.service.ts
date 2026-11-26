@@ -50,10 +50,10 @@ export class CalendarService {
     // Wochentag berechnen
     const weekday = selectedDate.getUTCDay() || 7;
 
-    // Ereignisse aus Supabase laden
+    // Ereignisse aus Supabase laden (über event_occurrences nach user_id filtern)
     const { data, error } = await supabase
-      .from('events')
-      .select('id, name, event_occurrences(*)')
+      .from('event_occurrences')
+      .select('id, event_id, event_date, weekday, start_time, end_time, events(name)')
       .eq('user_id', userId);
 
     if (error) {
@@ -65,23 +65,22 @@ export class CalendarService {
     // Ereignisse des ausgewählten Tages filtern
     const events: CalendarDayEvent[] = [];
 
-    for (const event of data ?? []) {
-      for (const occurrence of event.event_occurrences ?? []) {
-        if (
-          occurrence.event_date === date ||
-          (
-            occurrence.event_date === null &&
-            occurrence.weekday === weekday
-          )
-        ) {
-          events.push({
-            id: occurrence.id,
-            event_id: event.id,
-            name: event.name,
-            start_time: occurrence.start_time,
-            end_time: occurrence.end_time,
-          });
-        }
+    for (const occurrence of data ?? []) {
+      if (
+        occurrence.event_date === date ||
+        (occurrence.event_date === null && occurrence.weekday === weekday)
+      ) {
+        const eventInfo = Array.isArray(occurrence.events)
+          ? occurrence.events[0]
+          : occurrence.events;
+
+        events.push({
+          id: occurrence.id,
+          event_id: occurrence.event_id,
+          name: eventInfo?.name ?? 'Ereignis',
+          start_time: occurrence.start_time,
+          end_time: occurrence.end_time,
+        });
       }
     }
 

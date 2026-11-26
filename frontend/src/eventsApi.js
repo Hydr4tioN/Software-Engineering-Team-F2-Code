@@ -32,3 +32,6 @@ export const listEventsForSelection = () =>
 // Stresstoleranz eines Tages vom Backend laden.
 export const getStressTolerance = (date) =>
   request(`/stress-tolerance?date=${encodeURIComponent(date)}`);
+
+export const getCalendarDay = (date) =>
+  request(`/calendar/day?date=${encodeURIComponent(date)}`);
