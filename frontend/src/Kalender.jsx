@@ -1,9 +1,9 @@
 
 import { useEffect, useState } from "react";
-import { DAY_NAMES, toDateStr } from "./timelineUtils";
+import { DAY_NAMES, toDateStr, toMinutes } from "./timelineUtils";
 import EventSelectionMenu from "./EventSelectionMenu";
 import StressShield from "./StressShield";
-import { getStressTolerance } from "./eventsApi";
+import { getStressTolerance, getCalendarDay } from "./eventsApi";
 import "./Kalender.css";
 
 function Kalender() {
@@ -60,6 +60,44 @@ function Kalender() {
     loaded.date === selectedDate
       ? loaded.result
       : null;
+
+  // Termine der Tagesansicht aus dem Backend laden
+  const [loadedDayEvents, setLoadedDayEvents] = useState({
+    date: null,
+    events: [],
+  });
+
+  useEffect(() => {
+    let active = true;
+
+    getCalendarDay(selectedDate)
+      .then((data) => {
+        if (active) {
+          setLoadedDayEvents({
+            date: selectedDate,
+            events: data.events ?? [],
+          });
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setLoadedDayEvents({
+            date: selectedDate,
+            events: [],
+          });
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [selectedDate, reloadKey]);
+
+  const dayEvents =
+    loadedDayEvents.date === selectedDate
+      ? loadedDayEvents.events
+      : [];
+
 
   // Datum ändern
   function handleDateChange(event) {
@@ -280,6 +318,28 @@ function Kalender() {
                   key={hour}
                 />
               ))}
+
+              {dayEvents.map((ev) => {
+                const startMin = toMinutes(ev.start_time);
+                const endMin = toMinutes(ev.end_time);
+                const heightPx = Math.max(endMin - startMin, 24);
+                const timeRange = `${ev.start_time.slice(0, 5)} – ${ev.end_time.slice(0, 5)}`;
+
+                return (
+                  <div
+                    key={ev.id}
+                    className="kalender-event-block"
+                    style={{
+                      top: `${startMin}px`,
+                      height: `${heightPx}px`,
+                    }}
+                    title={`${ev.name} (${timeRange})`}
+                  >
+                    <strong>{ev.name}</strong>
+                    <span>{timeRange}</span>
+                  </div>
+                );
+              })}
             </div>
 
           </div>
